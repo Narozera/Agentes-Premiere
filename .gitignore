@@ -1,0 +1,21 @@
+# Tudo ignorado por padrao (credenciais, historico, cache ficam FORA do GitHub)
+/*
+!/.gitignore
+!/README.md
+
+# skills do Premiere
+!/skills/
+/skills/*
+!/skills/reenquadrar-entrevistado/
+!/skills/legendas-entrevista/
+!/skills/animacoes-texto/
+
+# agentes
+!/agents/
+
+# memoria (preferencias de edicao)
+!/projects/
+/projects/*
+!/projects/C--Users-Gustavo-Documents-claude-premiere/
+/projects/C--Users-Gustavo-Documents-claude-premiere/*
+!/projects/C--Users-Gustavo-Documents-claude-premiere/memory/

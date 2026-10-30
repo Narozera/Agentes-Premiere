@@ -1,0 +1,3 @@
+- [Usuário: editor Perrengues do Brás](user-editor-perrengues.md) — entrevistas verticais 2 câmeras no Premiere, pt-BR
+- [Preferências de edição Perrengues](edicao-preferencias-perrengues.md) — sync, estilo/cores de legenda, réguas e escala 146
+- [Skills e agentes do Premiere](skill-reenquadrar-entrevistado.md) — reenquadrar, posicionador-video, revisor-legendas; ffmpeg/whisper locais
