@@ -43,3 +43,18 @@ Script nenhum consegue ler/editar legendas já existentes no Premiere 26.5 — o
   entrar 0,2–0,5 s atrasada — senão a última palavra de uma pergunta vira branca no corte.
 - PowerShell 5.1: variáveis não diferenciam maiúsculas (`$o` apaga `$Out`); scripts com acento em UTF-8 com BOM;
   `Select-Object -First N` num pipeline interrompe o script antes de ele gravar os arquivos.
+- **Caminho longo quebra o Whisper em silêncio**: o scratchpad pode passar de 260 caracteres; aí o `whisper-cli`
+  não acha o `edit.wav` e o `transcribe.ps1` termina sem `words.csv`/`sent.srt` (só "exit 2"). Use uma pasta curta
+  (ex.: `%TEMP%\claude\leg-<nome>`) como `$W` e confira se `words.csv` existe antes de seguir.
+- **Vídeo de uma pessoa só (monólogo, uma câmera)** — ex.: Caio Xavier, 9 vídeos de iPhone só em V1/A1, V2 vazia:
+  não existe entrevistador. Com `camTrack:1` vazio tudo sairia amarelo. Use `camTrack:0` e, como o Whisper costuma
+  jogar as primeiras palavras de cada bloco no buraco antes do clipe (viram `other`), troque `cam` do dump.json por
+  `[[0, end]]` (guarde o original como `dump-V1.json`) — tudo fica branco. Falas em que ele lê a pergunta de um
+  cliente ("Caio, fui até o banco...") são da mesma pessoa/câmera: deixe brancas e avise o usuário.
+- O SRT exportado pode ter outro nome que o informado (ex.: pediram `sequencia01.srt`, no disco era
+  `Sequência 01.srt`): confira com `Get-ChildItem` e compare com a duração da sequência ativa.
+- Premiere escreve dinheiro como `15000 R$` / `1 R$` / `2 milhões R$`: troque por `R$ 15 mil`, `R$ 1`, `R$ 2 milhões`.
+- `captions.ps1` (corrigido em 30/10/2026): a checagem de 0,6 s agora roda antes de prender o início em
+  `anterior + 0,1` (antes, um início muito errado era "preso" e aceito), legendas em REVISAR mantêm também o fim
+  original, e nenhuma legenda sai com fim ≤ início (antes saíam coisas como `39,200 --> 32,570`). Sempre valide
+  o SRT final (fim > início, inícios em ordem) antes de importar.

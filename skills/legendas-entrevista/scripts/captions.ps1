@@ -76,18 +76,23 @@ if ($Retime -ne 'none') {
   for ($i = 0; $i -lt $caps.Count; $i++) {
     $c = $caps[$i]; if (-not (& $want $c) -or -not $first.ContainsKey($i)) { continue }
     $ns = [math]::Max(0.0, [double]((Onset $first[$i]) - $Lead))
-    if ($i -gt 0) { $ns = [math]::Max($ns, $caps[$i - 1].s + 0.1) }
     # Whisper word times are occasionally off by ~1 s: a big jump is more likely a Whisper error than a Premiere one
+    # (checked BEFORE clamping to the previous caption, or a far-off onset gets clamped into a "plausible" one)
     if ([math]::Abs($ns - $c.s) -gt 0.6) { $flagged += $c.n; continue }
+    if ($i -gt 0) { $ns = [math]::Max($ns, $caps[$i - 1].s + 0.1) }
     $c.old = $c.s; $c.s = $ns
   }
   # ends: run into the next caption when close, else hold 0.2 s after the last word
   for ($i = 0; $i -lt $caps.Count; $i++) {
     $c = $caps[$i]; $nextS = if ($i + 1 -lt $caps.Count) { $caps[$i + 1].s } else { $c.e }
-    if (& $want $c) { $wordEnd = if ($last.ContainsKey($i)) { $last[$i] } else { $c.e }; $c.e = if ($nextS - $wordEnd -lt 0.6) { $nextS } else { $wordEnd + 0.2 } }
+    # flagged (REVISAR) captions, or ones whose aligned words end before the caption starts, keep Premiere's end
+    $trust = $last.ContainsKey($i) -and ($flagged -notcontains $c.n) -and ($last[$i] -gt $c.s + 0.05)
+    if (& $want $c) { $wordEnd = if ($trust) { $last[$i] } else { $c.e }; $c.e = if ($nextS - $wordEnd -lt 0.6) { $nextS } else { $wordEnd + 0.2 } }
     elseif ($c.e -gt $nextS) { $c.e = $nextS }
     if ($i -gt 0 -and $caps[$i - 1].e -gt $c.s) { $caps[$i - 1].e = $c.s }
   }
+  # never emit an end before (or equal to) the start
+  for ($i = 0; $i -lt $caps.Count; $i++) { $c = $caps[$i]; if ($c.e -le $c.s) { $nextS = if ($i + 1 -lt $caps.Count) { $caps[$i + 1].s } else { $c.s + 0.5 }; $c.e = [math]::Max($c.s + 0.05, [math]::Min($c.s + 0.5, $nextS)) } }
 }
 
 $sb = New-Object Text.StringBuilder
