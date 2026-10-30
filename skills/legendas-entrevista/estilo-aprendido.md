@@ -18,6 +18,18 @@ Confiança cresce a cada vídeo novo. **Leia também `glossario.md`** (nomes e t
 | Médico + Pinfer | Whisper turbo | 91,6% | – | – |
 | Médico + Pinfer | **agente às cegas** (Caio + GUALDEZI + MACHADO) | **94,1%** | 80,2% ⚠ | 77,1% |
 | Médico + Pinfer | mesmo texto + regra da troca de câmera | 94,1% | 80,4% | **83,0%** |
+| Médico + Pinfer | agente com SRT + Whisper large-v3 + regras novas* | **97,0%** | **86,1%** | **83,2%** |
+| Médico + Pinfer | agente com a transcrição JSON (sem SRT)* | 97,2% | 66,3% ⚠ | 47% (tempo do JSON) |
+
+* regras e glossário já tinham aprendido com este vídeo → valores otimistas; a comparação SRT × JSON é justa.
+
+**SRT x transcrição JSON do Premiere (teste de 30/10/2026, Médico + Pinfer):** use o **SRT das legendas** como base.
+O JSON traz o tempo de cada palavra e quem fala, mas sem a divisão em legendas o agente dividiu mal (66% x 86%), e o
+tempo das palavras dele ficou longe do tempo do usuário (o usuário segue o início das legendas do Premiere: 83% a
+≤ 2 frames com o SRT). O texto do JSON é de outra transcrição e acertou um pouco mais que o SRT sozinho (91,3% x
+89,5%), mas depois que o agente junta com o Whisper a diferença some (97,2% x 97,0%). O JSON testado veio de outra
+versão da timeline (ordem e cortes diferentes) e precisou ser realinhado pelo áudio; o "quem fala" dele errou o Médico
+inteiro (tudo "Orador 1") — as câmeras continuam melhores para separar as pessoas.
 
 No Médico a divisão do agente ficou **pior** que a do Premiere (80,2% x 84,6%) porque ele redividiu pela gramática.
 Conclusão dos 4 vídeos (abaixo, "Divisão"): mexer pouco na divisão do Premiere. Meta: subir palavras a cada vídeo novo. O tempo depende de quanto o usuário mexe em cada vídeo (ele varia
