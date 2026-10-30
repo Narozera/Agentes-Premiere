@@ -8,6 +8,8 @@ Acrescente aqui todo nome/termo novo que aparecer quando aprender com uma legend
 - `tá` ← está/estar · `tô` ← estou · `tava` ← estava · `pra`/`pro`/`pros` ← para/para o/para os (quando falado assim)
 - Números em algarismos: `3` ← três, `4` ← quatro, `5` ← Cinco; milhar com ponto: `100.000` ← 100000 / 100 mil,
   `500.000` ← 500 mil; `30 milhões`; anos `2026`.
+- Forma falada na dúvida: `tô` (7 de 7), `tá` (16 de 21), `pra` (30 de 45). `estão` fica `estão`.
+- Porcentagem com o símbolo: `60%` ← "60". Data em algarismos com barra: `10/10/2000` ← "dez de 2000"/"10 do 10 de 2000".
 - Repetição falada fica repetida, uma por legenda: `13 | 13 | 13` (o Premiere juntou em "13 13 13").
 
 ## Política (MACHADO — "Kilter + Armamento + 2 Esquerda", 2026)
@@ -26,6 +28,12 @@ Acrescente aqui todo nome/termo novo que aparecer quando aprender com uma legend
 - `Selic` ← "link" · `Pronampe` ← "pronome"/"academia"/"Pronamp" · `inadimplência` ← "na dispensa" ·
   `juro` ← "giro" · `Americanas` ← "americana" · `pandemia` ← "academia".
 - Dinheiro: `R$15 mil` ← "15000 R$" · `R$1` ← "1 R$" · `R$2 milhões` ← "2 milhões R$".
+
+## Saúde / empresas (GUALDEZI — "Médico + Pinfer", 2026)
+- `Pinfer` (nome da empresa) ← "dá para"/"para" (Premiere), "Pinfair" (Whisper) — o usuário escreveu `dá Pinfer`, `a Pinfer`.
+- `SUS` ← "Nossa"/sumido (Premiere) · `hospital Pequeno Príncipe` ← "Stop no" · `cirurgião de criança` ← "crença" ·
+  `umas férias` ← "uma série" · `Tenho metalúrgica` ← "tem um metalúrgico" (Premiere) / "São metalúrgicos" (Whisper) ·
+  `equipamentos` ← "que os" · `Faturo` ← "faturou" · `mantia` (como falado) ← "mantinha".
 
 ## Cidadania italiana / rua (GUALDEZI)
 - `Episcopal` ← "Piscopal" · `nomeado bispo` ← "Iado Dispo"/"Depois do" · `aposentado` ← "apresentado" ·

@@ -30,8 +30,10 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
 3. **Transcrever**: `& "$SK\transcribe.ps1" -Dump "$W\dump.json" -OutDir $W` → `edit.wav` (áudio da timeline
    editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Leia o `sent.srt`.
 4. **Reescrever as legendas** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**, o vídeo inteiro.
-   Parta do texto do Premiere + transcrição + contexto e aplique `estilo-aprendido.md` e `glossario.md` (palavras como foram faladas, nomes inteiros,
-   `pra`, algarismos, `R$15 mil`; redividir/juntar/separar). Sem acrescentar pontuação. Regras de texto:
+   Parta do texto **e da divisão** do Premiere + transcrição + contexto e aplique `estilo-aprendido.md` e
+   `glossario.md`: palavras como foram faladas (na dúvida `tô`/`tá`/`pra`), algarismos, `R$15 mil`, nomes inteiros.
+   **Mexa pouco na divisão** (junte nome dividido; encaixe a fala que você acrescentar). Sem acrescentar pontuação.
+   Regras de texto:
    - não invente fala: toda palavra tem que estar no áudio (Premiere ou Whisper); na dúvida mantenha e liste;
    - nomes de lugares/termos do contexto (Brás, Selic, Pronampe...); complete palavras engolidas;
    - quando Whisper e Premiere discordam e o áudio é ambíguo, escolha a mais plausível e **liste para o usuário conferir**.
@@ -39,7 +41,8 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
 5. **Tempo + cores**: `& "$SK\captions.ps1" -Srt <srt do Premiere> -Out <pasta do projeto>\<nome> - corrigida.srt -WorkDir $W -Texto "$W\texto.txt" -Retime none`
    O tempo de cada linha vem das palavras do Premiere que ela cobre, 1 frame mais cedo (`-Lead`); o início que cai
    a ≤ 0,25 s de um corte (clipe do áudio ou troca de câmera) vai para o frame do corte; o que começa embaixo de uma
-   animação/gráfico sai (**TIRADAS**). A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM
+   animação/gráfico sai (**TIRADAS**); legenda que atravessa troca de câmera (= troca de pessoa) é dividida
+   na troca (**DIVIDIDAS NA TROCA DE CAMERA**) — por isso o `camTrack` do dump precisa ser a câmera do entrevistado. A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM
    LEGENDA NOVA**: em cada um, divida a linha do `texto.txt` ali (se fizer sentido) e rode de novo. Em entrevista,
    confira as perguntas do entrevistador: devem estar como `other`.
 6. **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`

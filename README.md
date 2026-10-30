@@ -11,7 +11,7 @@ Skills, agentes e memoria do Claude Code para edicao de entrevistas verticais no
 
 ## Instalar em outro computador
 1. Clonar este repositorio dentro de `C:\Users\<usuario>\.claude` (ou copiar as pastas `skills` e `agents` para la).
-2. Ferramentas externas (nao vao para o GitHub por serem grandes): ffmpeg e whisper.cpp + modelo
-   `ggml-large-v3-turbo-q5_0.bin` em `%LOCALAPPDATA%\claude-premiere-tools`. O Claude baixa de novo se pedir.
+2. Ferramentas externas (nao vao para o GitHub por serem grandes): ffmpeg e whisper.cpp + modelos
+   `ggml-large-v3.bin` (3 GB, padrao das legendas) e `ggml-large-v3-turbo-q5_0.bin` em `%LOCALAPPDATA%\claude-premiere-tools`. O Claude baixa de novo se pedir.
 3. Premiere Pro com o MCP premiere-pro configurado.
 4. Node.js (para o `aprender.mjs` das legendas).

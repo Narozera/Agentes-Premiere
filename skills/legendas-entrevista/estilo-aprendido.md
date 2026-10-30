@@ -3,7 +3,7 @@
 Regras tiradas comparando a legenda final do usuário com a do Premiere e a do agente (`scripts/aprender.mjs`).
 Se uma regra conflitar com um pedido do usuário, o pedido vence.
 
-Base: 3 vídeos — Caio Xavier (advogado, monólogo, 564 legendas), GUALDEZI "Mãe Vitin + Bispo + Aposentada"
+Base: 4 vídeos — GUALDEZI "Médico + Pinfer" (2 entrevistas, 410 legendas), Caio Xavier (advogado, monólogo, 564 legendas), GUALDEZI "Mãe Vitin + Bispo + Aposentada"
 (3 entrevistas de rua, 348 legendas) e MACHADO "Kilter + Armamento + 2 Esquerda" (4 entrevistas de política, 567).
 Confiança cresce a cada vídeo novo. **Leia também `glossario.md`** (nomes e termos por cliente/assunto).
 
@@ -14,8 +14,13 @@ Confiança cresce a cada vídeo novo. **Leia também `glossario.md`** (nomes e t
 | Caio | agente antigo (antes de aprender) | 96,8% | 87,1% | 39,8% |
 | MACHADO | Premiere | 94,3% | 83,0% | 79,0% |
 | MACHADO | **agente às cegas** (só com Caio + GUALDEZI) | **97,3%** | **86,6%** | 78,4% |
+| Médico + Pinfer | Premiere | 89,5% | 84,6% | 82,7% |
+| Médico + Pinfer | Whisper turbo | 91,6% | – | – |
+| Médico + Pinfer | **agente às cegas** (Caio + GUALDEZI + MACHADO) | **94,1%** | 80,2% ⚠ | 77,1% |
+| Médico + Pinfer | mesmo texto + regra da troca de câmera | 94,1% | 80,4% | **83,0%** |
 
-Meta: subir palavras e divisão a cada vídeo novo. O tempo depende de quanto o usuário mexe em cada vídeo (ele varia
+No Médico a divisão do agente ficou **pior** que a do Premiere (80,2% x 84,6%) porque ele redividiu pela gramática.
+Conclusão dos 4 vídeos (abaixo, "Divisão"): mexer pouco na divisão do Premiere. Meta: subir palavras a cada vídeo novo. O tempo depende de quanto o usuário mexe em cada vídeo (ele varia
 0–3 frames em relação ao Premiere), então ~65–80% a até 2 frames é perto do teto.
 O usuário legenda monólogos e entrevistas do mesmo jeito; a única diferença é a cor por falante.
 
@@ -26,10 +31,19 @@ além do que o Premiere já trouxe. A divisão das legendas entra no foco porque
 aparece na tela.
 
 ## 1. Palavras certas
+- **Transcritor**: o `transcribe.ps1` usa o **Whisper large-v3 completo** (padrão desde 30/10/2026). Nos 4 vídeos ele
+  acertou 94,9% das palavras contra 92,7% do turbo (Caio 95,7/95,3 · Mãe Vitin 93,3/88,6 · MACHADO 94,8/95,3 · Médico
+  95,6/91,6): 24% menos erros. Leva ~0,6× o tempo do vídeo (14 núcleos). `-Model turbo` se tiver pressa.
+  O large-v3 às vezes escreve fala em silêncio/ruído (no Caio, 115 palavras a mais): palavra que só ele ouviu e o
+  Premiere não, num trecho sem fala clara, **não entra**. WhisperX daria o mesmo texto (mesmo modelo) e só acelera com
+  placa NVIDIA — a do usuário é AMD RX 6800 XT —, então não vale instalar Python por ele.
 - **Escreva exatamente o que a pessoa fala**, não o que o Premiere "corrige": `pra` (não `para`) quando ela fala
   "pra", `pro`, `tá`, `tão`, `num`, `a tua`. Se ela fala "para", fica `para`. Mantenha repetições faladas
   (`agora minha | minha parcela`). Complete palavras que o Premiere engoliu (`a gente conversar`, `do que um juro`).
-  Confirmado nas entrevistas: `tá` (Whisper `está`, 9×), `tô` (`estou`), `tava` (`estava`), `pra` (`para`/`para a`, 10×).
+  **Na dúvida, use a forma falada** — contagem dos 4 vídeos (o que o Premiere escreveu → o que o usuário deixou):
+  `estou` → **`tô` 7 de 7** · `está` → **`tá` 16 de 21** · `para` → **`pra` 30 de 45** (fora "para de" = verbo
+  parar, que fica) · `estava` → `tava` 1 de 2 · `estão` → `estão` 5 de 6 (este fica). No Médico o agente às cegas
+  manteve `para/está/estou` do Premiere e perdeu ~15 palavras só nisso.
 - **Números sempre em algarismos**: `Sinal 1`, `3 dias`, `10 anos`, `Em 6 meses`, `70%`, `2%`, `Os 2`, `1 semana`.
   Quantidade grande que não é dinheiro vai com ponto de milhar: `500.000 vagas` (o Whisper escreve `500 mil`).
 - **Dinheiro**: `R$` colado no número e `mil`/`milhões`/`bilhões` por extenso: `R$15 mil`, `R$1`, `R$500 mil`,
@@ -57,6 +71,11 @@ aparece na tela.
   3 frames (GUALDEZI) antes do Premiere; o ajuste pelo Whisper ficou 0,08–0,13 s longe. → `captions.ps1 -Retime
   none` (no modo `-Texto`, o `-Lead 0.017` padrão adianta 1 frame — o melhor no conjunto dos 3 vídeos: 63,9% a
   até 2 frames; com 0 ou 2 frames, 62–63%).
+- **Troca de câmera = troca de pessoa: legenda nunca atravessa.** Câmera 1 = entrevistador, câmera 2 = entrevistado.
+  O usuário começa legenda em 97–98% das trocas de câmera e **nunca** deixa uma legenda passar por cima (0 casos em 3
+  vídeos: Mãe Vitin 94/97, Médico 103/105, MACHADO 134/137); o agente deixava 10–19. O `captions.ps1` agora resolve sozinho: encaixa o início na troca (prioridade sobre
+  os cortes de áudio) e divide a legenda que atravessa, pondo cada palavra do lado em que o Whisper a ouviu
+  ("DIVIDIDAS NA TROCA DE CAMERA"). Médico às cegas: início a ≤ 2 frames 77,1% → 83,0%; atravessando 19 → 0.
 - **Toda vez que a timeline tem um corte (jump cut), começa uma legenda nova exatamente no frame do corte**
   (Caio: 208 de 216 cortes; GUALDEZI: 98 de 104; MACHADO: 143 de 159). **Corte também é troca de câmera** (entrada/saída do clipe
   da câmera 2), não só corte no áudio: `Lisboa!` começa em 1,066 s, onde entra a câmera 2. O `captions.ps1` encaixa com `-Snap 0.25` e lista os cortes
@@ -69,20 +88,22 @@ aparece na tela.
   proporção das palavras) e onde o Premiere pulou a fala (sem tempo próprio).
 
 ## 3. Divisão (porque define o tempo de cada palavra)
-- **Nome próprio e termo composto nunca se dividem** (`Flávio Bolsonaro`, `Estados Unidos`, `Banco Master`,
-  `Lava Jato`, `Código Penal`): o Premiere quebra ("Flávio | Bolsonaro") e o agente às cegas copiou — erro mais comum.
-- **"verbo + que/de/é" fica no FIM da legenda e a próxima começa no nome/número**: `Eu acho que | o Flávio`,
-  `Você acha que | o Lula peca`, `Então é | Flávio Bolsonaro!`, `há mais de | 20 anos`, `é | 19`.
-- **Lista: um item por legenda**: `Petrolão | Lava Jato | Banco Master | INSS`, `Podemos | PL | União | PP`,
-  `onipresente | onisciente`, `13 | 13 | 13`.
-- Não deixe pronome ou palavra curta sozinha quando foi falada junto com a seguinte (o Premiere deixa):
-  `Eu | tô trabalhando` ✗ → `Eu tô trabalhando` ✓; `Se Deus | quiser` ✗ → `Se Deus quiser` ✓.
-- 1 linha, **1 a 3 palavras** (no máximo 5), **até ~20 caracteres**. Nas entrevistas, ainda mais curto: 88% com
-  1–2 palavras, mediana de 9 caracteres (fala rápida de rua). Monólogo: 2–3 palavras, mediana de 11 caracteres.
-- Pedaço de frase com sentido: **não quebre entre artigo/preposição/possessivo e a palavra seguinte**
-  (`Se a sua | empresa` ✗ → `Se a sua empresa` ✓; `mas no final | do mês` ✗ → `mas no final do mês` ✓).
-  A legenda começa na palavra de ligação (`e`, `que`, `pra`, `mas`...) e termina numa palavra de conteúdo.
-- **Valor em dinheiro fica sozinho na legenda** (ou só com a preposição): `era | R$15 mil`, `de R$130 mil`.
+- **Parta da divisão do Premiere e mexa pouco.** Medido em 3.965 vãos entre palavras dos 4 vídeos: onde o Premiere
+  corta, o usuário mantém 81%; onde não corta, ele corta só 13%. Testei regras automáticas (cortar em todo corte de
+  clipe, em toda pausa, juntar palavra de ligação, juntar legenda curtinha, "verbo + que no fim"): **nenhuma superou
+  a divisão do Premiere** (F1 81,3); cada uma acerta uns casos e erra outros tantos. O que muda é decisão dele, caso a caso.
+- **Mude só quando:**
+  1. **Nome próprio/termo composto ficou dividido** — sempre junte (`Flávio Bolsonaro`, `Estados Unidos`, `Banco Master`,
+     `Lava Jato`, `governo Lula`, `primeiro turno`, `Pequeno Príncipe`); é a única regra que melhorou (F1 81,6).
+  2. Você **acrescentou ou tirou fala** (o que o Premiere pulou entra numa legenda própria ou junto da vizinha, 1–3 palavras).
+  3. Lista em que o Premiere quebrou no meio dos nomes: um item por legenda (`Petrolão | Lava Jato | Banco Master | INSS`).
+- Não use as regras de gramática que apareceram no MACHADO ("verbo + que fica no fim", "não deixar pronome sozinho"):
+  no Médico o usuário fez o contrário (`eu acho que o maior diferencial`, `de mais de 3 dias` juntos).
+- Para a fala que você acrescentar (item 2), use o tamanho dele como referência: 1 linha, **1 a 3 palavras** (no
+  máximo 5), **até ~20 caracteres**; entrevista mais curto (88% com 1–2 palavras), monólogo 2–3 palavras.
+- Tendências (só para desempatar, não para redividir o que o Premiere fez): quebrar entre artigo/preposição e a
+  palavra seguinte ele junta ~metade das vezes (`Se a sua empresa`); valor em dinheiro costuma ficar sozinho
+  (`era | R$15 mil`).
 
 ## Não é foco (o usuário faz à mão)
 - Pontuação (ele usa `!` no fim das frases e `?` nas perguntas, sem vírgula/ponto) e maiúsculas — só para referência.

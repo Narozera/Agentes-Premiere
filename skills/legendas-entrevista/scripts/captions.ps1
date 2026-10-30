@@ -125,18 +125,62 @@ if ($Retime -ne 'none') {
 
 # --- the user starts a new caption on every cut (dialogue clips and camera switches): snap the nearest start onto it
 $lonely = @()
+$inRange = { $_ -gt 0.01 -and $_ -lt [double]$dump.end - 0.01 }
+$audioCuts = @($dump.audio | ForEach-Object { [math]::Round([double]$_.start, 3) } | Where-Object $inRange | Sort-Object -Unique)
+# camera switches = speaker changes (interviewer cam 1 / interviewee cam 2): the user starts a caption on 97-98% of them
+$camCuts = @($dump.cam | ForEach-Object { [math]::Round([double]$_[0], 3); [math]::Round([double]$_[1], 3) } | Where-Object $inRange | Sort-Object -Unique)
 if ($Snap -gt 0) {
-  $cuts = @(@($dump.audio | ForEach-Object { [double]$_.start }) + @($dump.cam | ForEach-Object { [double]$_[0]; [double]$_[1] }) |
-    Where-Object { $_ -gt 0.01 -and $_ -lt [double]$dump.end - 0.01 } | ForEach-Object { [math]::Round($_, 3) } | Sort-Object -Unique)
-  foreach ($t in $cuts) {
+  # audio cuts first, camera switches last: a start snapped to a camera switch is locked
+  $locked = @{}
+  foreach ($t in @($audioCuts | ForEach-Object { @{ t = $_; cam = $false } }) + @($camCuts | ForEach-Object { @{ t = $_; cam = $true } })) {
     $best = -1; $bd = $Snap
-    for ($i = 0; $i -lt $caps.Count; $i++) { $dd = [math]::Abs($caps[$i].s - $t); if ($dd -le $bd) { $bd = $dd; $best = $i } }
-    if ($best -lt 0) { if ($t -gt $caps[0].s -and $t -lt $caps[$caps.Count - 1].e) { $lonely += $t }; continue }
+    for ($i = 0; $i -lt $caps.Count; $i++) { if ($locked.ContainsKey($i)) { continue }; $dd = [math]::Abs($caps[$i].s - $t.t); if ($dd -le $bd) { $bd = $dd; $best = $i } }
+    if ($best -lt 0) { if (-not $t.cam -and $t.t -gt $caps[0].s -and $t.t -lt $caps[$caps.Count - 1].e) { $lonely += $t.t }; continue }
     $c = $caps[$best]
-    if ($best -gt 0 -and [math]::Abs($caps[$best - 1].e - $c.s) -lt 0.02) { $caps[$best - 1].e = $t }
-    if ($null -eq $c.old) { $c.old = $c.s }; $c.s = $t
+    if ($best -gt 0 -and [math]::Abs($caps[$best - 1].e - $c.s) -lt 0.02) { $caps[$best - 1].e = $t.t }
+    if ($null -eq $c.old) { $c.old = $c.s }; $c.s = $t.t
     if ($c.e -le $c.s) { $c.e = $c.s + 0.1 }
+    if ($t.cam) { $locked[$best] = $true }
   }
+}
+
+# --- a caption never crosses a camera switch (it would mix the two speakers): split it at the switch, putting each
+# word on the side where Whisper heard it (no Whisper time: by its position in the caption)
+$camSplit = 0
+if ($camCuts.Count) {
+  $tokTimes = @{}; for ($k = 0; $k -lt $ct.Count; $k++) { $ci = $ct[$k].cap; if (-not $tokTimes.ContainsKey($ci)) { $tokTimes[$ci] = @() }; $tokTimes[$ci] += $(if ($al[$k] -ge 0) { $wt[$al[$k]].s } else { $null }) }
+  $inCam = { param($x) foreach ($r in $dump.cam) { if ($x -ge [double]$r[0] -and $x -lt [double]$r[1]) { return $true } }; $false }
+  $splitCaps = @()
+  for ($i = 0; $i -lt $caps.Count; $i++) {
+    $c = $caps[$i]; $ws = @($c.text -split '\s+' | Where-Object { $_ })
+    $sw = @($camCuts | Where-Object { $_ -gt $c.s + 0.05 -and $_ -lt $c.e - 0.05 })
+    if ($ws.Count -lt 2 -or $sw.Count -eq 0) { $splitCaps += $c; continue }
+    # time of each word = Whisper time of its first token
+    $wtime = @(); $ti = 0; $tt = @($tokTimes[$i])
+    for ($w = 0; $w -lt $ws.Count; $w++) {
+      $nTok = @((Norm $ws[$w]) -split '\s+' | Where-Object { $_ }).Count
+      $wtime += $(if ($nTok -gt 0 -and $ti -lt $tt.Count -and $null -ne $tt[$ti]) { [double]$tt[$ti] } else { $c.s + ($c.e - $c.s) * $w / $ws.Count })
+      $ti += $nTok
+    }
+    $from = 0; $s = $c.s
+    foreach ($t in $sw) {
+      $k = $from; while ($k -lt $ws.Count -and $wtime[$k] -lt $t - 0.03) { $k++ }
+      if ($k -le $from -or $k -ge $ws.Count) { continue }
+      $splitCaps += [pscustomobject]@{ n = 0; s = $s; e = $t; text = ($ws[$from..($k - 1)] -join ' '); spk = $(if (& $inCam (($s + $t) / 2)) { 'cam' } else { 'other' }); old = $null }
+      $from = $k; $s = $t; $camSplit++
+    }
+    $splitCaps += [pscustomobject]@{ n = 0; s = $s; e = $c.e; text = ($ws[$from..($ws.Count - 1)] -join ' '); spk = $(if ($from -gt 0) { if (& $inCam (($s + $c.e) / 2)) { 'cam' } else { 'other' } } else { $c.spk }); old = $c.old }
+  }
+  $caps = $splitCaps
+  # still spanning a switch = all its words are on one side: trim it to the switch and let the neighbour start there
+  foreach ($t in $camCuts) {
+    for ($i = 0; $i -lt $caps.Count; $i++) {
+      $c = $caps[$i]; if (-not ($c.s -lt $t - 0.034 -and $c.e -gt $t + 0.034)) { continue }
+      if ($t - $c.s -ge $c.e - $t) { $c.e = $t; if ($i + 1 -lt $caps.Count -and $caps[$i + 1].s - $t -lt 0.35) { $caps[$i + 1].s = $t } }
+      else { $c.s = $t; if ($i -gt 0 -and $t - $caps[$i - 1].e -lt 0.35) { $caps[$i - 1].e = $t } }
+    }
+  }
+  for ($i = 0; $i -lt $caps.Count - 1; $i++) { if ($caps[$i].e -gt $caps[$i + 1].s) { $caps[$i].e = $caps[$i + 1].s } }
 }
 
 # --- no captions under animations/graphics (dump.overlay): the user leaves those stretches empty
@@ -161,6 +205,7 @@ $sb = New-Object Text.StringBuilder
 foreach ($c in $caps) { $col = if ($c.spk -eq 'cam') { $CamColor } else { $OtherColor }; [void]$sb.Append("$($c.n)`r`n$(Tc $c.s) --> $(Tc $c.e)`r`n<font color=$col>$($c.text)</font>`r`n`r`n") }
 [IO.File]::WriteAllText($Out, $sb.ToString(), $enc)
 $caps | ForEach-Object { '{0,3} {1,-5} {2,7} {3,7}  {4}' -f $_.n, $_.spk, $(if ($null -ne $_.old) { Fmt $_.old 'F2' } else { '' }), (Fmt $_.s 'F2'), $_.text }
+if ($camSplit) { "DIVIDIDAS NA TROCA DE CAMERA (cada pessoa na sua legenda): $camSplit" }
 if ($dropped.Count) { "TIRADAS (embaixo de animacao/grafico): " + ($dropped -join ' | ') }
 if ($lonely.Count) { "CORTES SEM LEGENDA NOVA (divida o texto ali se fizer sentido): " + (($lonely | ForEach-Object { Tc $_ }) -join ', ') }
 if ($flagged.Count) { "REVISAR (tempo do Whisper muito diferente do Premiere, mantido o original): " + ($flagged -join ', ') }
