@@ -3,10 +3,13 @@ param(
   [Parameter(Mandatory)][string]$Out,        # corrected SRT to import back
   [Parameter(Mandatory)][string]$WorkDir,    # folder with dump.json, words.csv, edit.wav
   [string]$Fixes,                            # optional JSON {"6":"aqui no Brás", ...} (caption number -> new text)
+  [string]$Texto,                            # optional UTF-8 file, one caption per line: replaces Premiere's split/text
+
   [string]$CamColor = '#FFFFFFFF',           # captions while the interviewee camera is on screen
   [string]$OtherColor = '#FCFC00FF',         # captions on the other camera (interviewer)
   [ValidateSet('cam', 'other', 'both', 'none')][string]$Retime = 'cam',
-  [double]$Lead = 0.033                      # captions appear this much before the first word (1 frame)
+  [double]$Lead = 0.033,                     # captions appear this much before the first word (1 frame)
+  [double]$Snap = 0.25                       # a caption start this close to a cut moves onto the cut (0 = off)
 )
 # 1) text fixes  2) color by camera coverage  3) retime starts to Whisper word onsets (refined by audio energy)
 . "$PSScriptRoot\..\..\reenquadrar-entrevistado\scripts\common.ps1"
@@ -44,6 +47,30 @@ foreach ($b in (([IO.File]::ReadAllText($Srt, $enc) -replace "`r`n", "`n").Trim(
   $text = (($L[2..($L.Count - 1)] -join "`n") -replace '</?font[^>]*>', '').Trim()
   if ($fixMap.ContainsKey($num)) { $text = $fixMap[$num] }
   $caps += [pscustomobject]@{ n = $num; s = (ToSec $tt[0]); e = (ToSec $tt[1]); text = $text; spk = ''; old = $null }
+}
+
+# --- re-segmented text (one caption per line): rough times come from the Premiere words each line covers
+if ($Texto) {
+  $pt = @()   # Premiere words, each with a time spread evenly over its caption
+  foreach ($c in $caps) {
+    $toks = @((Norm $c.text) -split '\s+' | Where-Object { $_ }); $nk = $toks.Count
+    for ($j = 0; $j -lt $nk; $j++) { $pt += [pscustomobject]@{ tok = $toks[$j]; s = $c.s + ($c.e - $c.s) * $j / $nk; e = $c.s + ($c.e - $c.s) * ($j + 1) / $nk } }
+  }
+  $lines = @([IO.File]::ReadAllLines($Texto, $enc) | ForEach-Object { $_.Trim([char]0xFEFF, ' ', "`t") } | Where-Object { $_ })
+  $nt = @(); for ($i = 0; $i -lt $lines.Count; $i++) { foreach ($tok in ((Norm $lines[$i]) -split '\s+' | Where-Object { $_ })) { $nt += [pscustomobject]@{ tok = $tok; cap = $i } } }
+  $pa = [CapUtil]::Align([string[]]@($nt | ForEach-Object tok), [string[]]@($pt | ForEach-Object tok))
+  $s0 = @{}; $e0 = @{}
+  for ($k = 0; $k -lt $nt.Count; $k++) { if ($pa[$k] -ge 0) { $ci = $nt[$k].cap; if (-not $s0.ContainsKey($ci)) { $s0[$ci] = $pt[$pa[$k]].s }; $e0[$ci] = $pt[$pa[$k]].e } }
+  $caps = @(); $cursor = 0.0
+  for ($i = 0; $i -lt $lines.Count; $i++) {
+    # a line with no word in common with Premiere (e.g. "Sinal 1" x "Se naum") starts where the previous one ends
+    $cs = if ($s0.ContainsKey($i)) { [math]::Max($s0[$i], $cursor) } elseif ($i -gt 0) { [math]::Max($caps[$i - 1].e, $cursor) } else { $cursor }
+    $ce = if ($e0.ContainsKey($i) -and $e0[$i] -gt $cs) { $e0[$i] } else { $cs + 0.3 }
+    $caps += [pscustomobject]@{ n = $i + 1; s = $cs; e = $ce; text = $lines[$i]; spk = ''; old = $null }
+    $cursor = $cs + 0.01
+  }
+  # captions run into each other; only a pause of 1 s or more leaves a gap
+  for ($i = 0; $i -lt $caps.Count - 1; $i++) { if ($caps[$i + 1].s - $caps[$i].e -lt 1.0) { $caps[$i].e = $caps[$i + 1].s } }
 }
 
 # --- align caption words to Whisper words (gives the real time each caption is spoken)
@@ -95,8 +122,24 @@ if ($Retime -ne 'none') {
   for ($i = 0; $i -lt $caps.Count; $i++) { $c = $caps[$i]; if ($c.e -le $c.s) { $nextS = if ($i + 1 -lt $caps.Count) { $caps[$i + 1].s } else { $c.s + 0.5 }; $c.e = [math]::Max($c.s + 0.05, [math]::Min($c.s + 0.5, $nextS)) } }
 }
 
+# --- the user starts a new caption on every cut of the dialogue track: snap the nearest caption start onto it
+$lonely = @()
+if ($Snap -gt 0) {
+  $cuts = @($dump.audio | ForEach-Object { [double]$_.start } | Where-Object { $_ -gt 0.01 } | Sort-Object -Unique)
+  foreach ($t in $cuts) {
+    $best = -1; $bd = $Snap
+    for ($i = 0; $i -lt $caps.Count; $i++) { $dd = [math]::Abs($caps[$i].s - $t); if ($dd -le $bd) { $bd = $dd; $best = $i } }
+    if ($best -lt 0) { if ($t -gt $caps[0].s -and $t -lt $caps[$caps.Count - 1].e) { $lonely += $t }; continue }
+    $c = $caps[$best]
+    if ($best -gt 0 -and [math]::Abs($caps[$best - 1].e - $c.s) -lt 0.02) { $caps[$best - 1].e = $t }
+    if ($null -eq $c.old) { $c.old = $c.s }; $c.s = $t
+    if ($c.e -le $c.s) { $c.e = $c.s + 0.1 }
+  }
+}
+
 $sb = New-Object Text.StringBuilder
 foreach ($c in $caps) { $col = if ($c.spk -eq 'cam') { $CamColor } else { $OtherColor }; [void]$sb.Append("$($c.n)`r`n$(Tc $c.s) --> $(Tc $c.e)`r`n<font color=$col>$($c.text)</font>`r`n`r`n") }
 [IO.File]::WriteAllText($Out, $sb.ToString(), $enc)
 $caps | ForEach-Object { '{0,3} {1,-5} {2,7} {3,7}  {4}' -f $_.n, $_.spk, $(if ($null -ne $_.old) { Fmt $_.old 'F2' } else { '' }), (Fmt $_.s 'F2'), $_.text }
+if ($lonely.Count) { "CORTES SEM LEGENDA NOVA (divida o texto ali se fizer sentido): " + (($lonely | ForEach-Object { Tc $_ }) -join ', ') }
 if ($flagged.Count) { "REVISAR (tempo do Whisper muito diferente do Premiere, mantido o original): " + ($flagged -join ', ') }
