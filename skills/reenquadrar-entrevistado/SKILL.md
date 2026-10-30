@@ -18,6 +18,9 @@ Scripts em `~/.claude/skills/reenquadrar-entrevistado/scripts/` (abaixo, `$SK`).
 ## Preferências do usuário (padrões — confirme se o projeto for diferente)
 - Sequência vertical 1080×1920; câmera do entrevistado = iPhone 4K (2160×3840) na **V2**, DJI na V1.
 - Escala base **146** (o usuário aprovou). Punch-in de ênfase **175–185**. Zoom lento 146→160/170/185 em falas longas.
+- **Enquadramento que o usuário fez à mão (2026-10-30, sequência 4K 2160×3840)**: escala 130/152, rosto em x≈1075–1090 e
+  topo da cabeça em y≈425–470 (≈11–12% da altura, mais alto que a régua de 20%). Sem clipe de referência no projeto,
+  use escala 130 e réguas x=1080, y=440 e diga isso ao usuário.
 - Réguas: x=540, y=384. **Não dá para ler as réguas do Premiere por script** — se o usuário mudou, peça os valores;
   dá para deduzir de um clipe que ele já enquadrou: `rostoSaida = pos + (rostoFonte - fonte/2) * escala/100`.
 
@@ -146,3 +149,5 @@ câmeras se alternam, na prática a V2 entra aproximando e a V1 entra afastando.
   alguns clipes. A verificação pega isso (rosto ~100 px de saída fora da régua); corrija com recorte 1:1 + linha amarela
   no valor rastreado e `manual` com 3 pontos (início/meio/fim).
 - PowerShell: não chame função de `R` — é alias de `Invoke-History`.
+- **In-point mudou pouco** (o usuário estendeu o início em 1 quadro): os tempos do track.json são absolutos da mídia,
+  então basta corrigir `in`/`dur` no job e rodar só o keys.ps1 de novo — não precisa rastrear outra vez.
