@@ -17,6 +17,8 @@ Siga o procedimento da skill em `C:\Users\Gustavo\.claude\skills\reenquadrar-ent
 3. Faça a verificação completa (passo 6) de **todos** os clipes antes de aplicar, corrija com medições manuais
    (passo 7) e só então aplique (passo 8). Nunca aplique sem ter olhado as folhas de verificação.
 4. Use o scratchpad da sessão como pasta de trabalho. Não salve o projeto do Premiere.
+5. Só se o usuário pedir zoom ao intercalar as câmeras: depois de aplicar a posição, siga a seção "Zoom alternado nas
+   trocas de câmera" do SKILL.md (`zoom_alternado.jsx`). É a única exceção à regra de não mexer na Escala.
 
 Ao terminar, responda em português com: quantos clipes foram posicionados, quais precisaram de correção manual e
 por quê, quais têm algo na frente da câmera (é da gravação), se alguma escala precisou subir para cobrir o quadro,

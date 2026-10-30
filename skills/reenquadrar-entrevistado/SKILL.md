@@ -1,6 +1,6 @@
 ---
 name: reenquadrar-entrevistado
-description: Reenquadra no Premiere Pro a câmera do entrevistado (vídeo vertical) com keyframes de posição que seguem o rosto e animação de escala (punch-in / zoom lento), mantendo o rosto no centro e o topo da cabeça na régua de cima. Use quando o usuário pedir para centralizar, enquadrar, reposicionar, rastrear ou dar zoom no entrevistado/convidado de uma trilha do Premiere, ou para "ajustar as posições da segunda câmera".
+description: Reenquadra no Premiere Pro a câmera do entrevistado (vídeo vertical) com keyframes de posição que seguem o rosto e animação de escala (punch-in / zoom lento), mantendo o rosto no centro e o topo da cabeça na régua de cima. Use quando o usuário pedir para centralizar, enquadrar, reposicionar, rastrear ou dar zoom no entrevistado/convidado de uma trilha do Premiere, ou para "ajustar as posições da segunda câmera". Também faz o zoom alternado (in/out) nas trocas entre câmeras.
 ---
 
 # Reenquadrar entrevistado no Premiere
@@ -61,6 +61,25 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
 - **Punch-in 175–185**: frase de efeito, número, nome próprio, repetição enfática ("Muita, muita"), emoção.
 - **Base 146**: respostas curtas, transições, falas neutras.
 - **Zoom lento** (ex.: [146,160], [146,170], [170,185]): clipes > ~2 s com fala que cresce; o final do vídeo.
+
+## Zoom alternado nas trocas de câmera (opcional, depois do enquadramento)
+Quando o usuário pedir "zoom leve quando intercalar as câmeras" (aprovado em 2026-10-30, vídeo Lésbica + Gilson):
+cada troca entre a câmera aberta (V1) e a do entrevistado (V2) começa um **trecho**; o trecho 0 fica parado e os
+seguintes alternam zoom-in lento (1 → 1+amount) e zoom-out (1+amount → 1), sem salto de escala no corte. Como as
+câmeras se alternam, na prática a V2 entra aproximando e a V1 entra afastando.
+- Script: `scripts/zoom_alternado.jsx`, rodado **sobre o enquadramento já aplicado** (lê as keys atuais do Premiere):
+  `var ARGS={wide:0, close:1, amount:0.08, anchorY:0.35, guides:[[0,28,1075,425],[29,55,1090,470]], skip:[],
+  part:"close", from:0, to:20, dry:false}; return $.evalFile("<$SK>/scripts/zoom_alternado.jsx");`
+  - `part:"close"`: V2 — escala base×f(t) e posição reescalada em volta da régua (`guides` = [primeiro, último clipe,
+    guideX, guideY] por vídeo, em px da sequência), então o rosto continua nas réguas. Clipe fora de `guides` é pulado.
+  - `part:"wide"`: V1 — zoom ancorado em (0,5; `anchorY`) do quadro (0,35 mantém as cabeças do plano aberto na mesma
+    altura), keys só nos trechos visíveis (onde a V2 não cobre).
+  - Pula clipes com Escala já animada (zoom feito à mão pelo usuário, ou o script já rodou): é seguro repetir um lote
+    que deu erro. Para refazer com outra intensidade, reaplique antes o enquadramento (`apply_keys.jsx` com keys.json).
+  - Faça `dry:true` primeiro: devolve o nº de trechos e [clipe, nº keys, escala inicial, final] sem alterar nada.
+  - Lotes de ~10 clipes na V2 (amostra a cada 0,1 s); a V1 cabe numa chamada.
+- Relate: clipes pulados (zoom manual do usuário), trechos longos onde o zoom fica sutil (8% em 20+ s) e pessoas
+  encostando na borda do plano aberto no zoom máximo.
 
 ## Lições aprendidas
 - **keys.json sem colchetes externos** (editado à mão) faz o `eval` do ExtendScript devolver só o ÚLTIMO clipe
