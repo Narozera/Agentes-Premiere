@@ -114,3 +114,16 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
 - Clipes de b-roll/cutaway no meio da câmera 2 (outra cena, sem o entrevistado): não aplique; relate.
 - Se só o out-point de um clipe mudou (trim no fim, in igual), os keyframes continuam válidos: basta cortar os keys
   depois da nova duração (não precisa rastrear de novo).
+- **`execute_extendscript` só devolve o que vier de `return`**: use `return $.evalFile("...")` (sem `return` volta
+  "undefined"). Em literais de objeto do ExtendScript, `in` como chave (`{in: 1}`) quebra o script inteiro — use `inp`.
+- **Ponte MCP "não está rodando" com o Premiere aberto**: veja `%TEMP%\premiere-mcp-bridge\bridge-heartbeat.json`; se o
+  horário parou, o painel travou (janela modal aberta ou painel suspenso). Peça para fechar diálogos e reabrir
+  Window > Extensions > MCP Bridge. Enquanto isso dá para adiantar medição/rastreamento/verificação (só ffmpeg).
+- **Sequência 4K (2160×3840)**: réguas e `seqW/seqH` em pixels 4K (padrão vira x=1080, y=768). O `dump_clips` diz o tamanho.
+- **Referência com rastreamento ruim** (2026-10-30, clipe 29 com score 0,44 e cabeça inclinada): a média
+  `posUsuario + (rosto - fonte/2) * escala` deu x=967, mas o quadro de saída renderizado mostrava o rosto em ~1090.
+  Quando o clipe de referência tem score baixo, leia as réguas direto do quadro de saída renderizado (2-3 tempos).
+- **Cabelo volumoso (cacheado) puxa a medição a olho**: na folha 1:4 o centro do rosto saiu ~45 px (fonte) à esquerda em
+  alguns clipes. A verificação pega isso (rosto ~100 px de saída fora da régua); corrija com recorte 1:1 + linha amarela
+  no valor rastreado e `manual` com 3 pontos (início/meio/fim).
+- PowerShell: não chame função de `R` — é alias de `Invoke-History`.
