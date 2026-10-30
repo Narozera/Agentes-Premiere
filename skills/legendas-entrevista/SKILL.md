@@ -1,6 +1,6 @@
 ---
 name: legendas-entrevista
-description: Revisa legendas de entrevista exportadas do Premiere Pro (SRT) — transcreve o áudio da timeline com Whisper, corrige o texto, pinta cada legenda pela câmera no ar (entrevistador/DJI amarelo, entrevistado/iPhone branco), ajusta o tempo ao início das palavras e importa de volta como trilha de legendas. Use quando o usuário mandar um SRT do Premiere para corrigir/arrumar/colorir/sincronizar, ou pedir para transcrever o vídeo.
+description: Revisa legendas de entrevista exportadas do Premiere Pro (SRT) — transcreve o áudio da timeline com Whisper, corrige o texto, pinta cada legenda pela câmera no ar (entrevistador/DJI amarelo, entrevistado/iPhone branco), ajusta o tempo e importa de volta como trilha de legendas. Use quando o usuário mandar um SRT do Premiere para corrigir/arrumar/colorir/sincronizar, ou pedir para transcrever o vídeo. Também aprende o estilo do usuário: quando ele mandar a legenda que corrigiu ("aprende com essa"), compara com a do Premiere/agente e atualiza estilo-aprendido.md.
 ---
 
 # Legendas de entrevista (SRT do Premiere)
@@ -10,11 +10,17 @@ Ferramentas: MCP `premiere-pro` (`execute_extendscript`, `import_captions`), Pow
 `~/.claude/skills/legendas-entrevista/scripts/` (abaixo, `$SK`). Pasta de trabalho: o scratchpad da sessão (`$W`).
 Script nenhum consegue ler/editar legendas já existentes no Premiere 26.5 — o caminho é exportar SRT → corrigir → importar.
 
+## Antes de tudo: o que o usuário quer
+Leia **`estilo-aprendido.md`** (nesta pasta) inteiro. Ele foi tirado das legendas que o próprio usuário corrigiu.
+**Foco: palavras certas e tempo certo** (e a divisão, porque ela decide o tempo). Pontuação, maiúsculas e visual o
+usuário faz à mão — não acrescente. As regras abaixo só valem onde esse arquivo não disser outra coisa.
+
 ## Padrões do usuário (confirme se o projeto for diferente)
 - Áudio de diálogo = **A1** (DJI). Câmera do entrevistado = **V2** (iPhone). Entrevistador aparece na DJI (V1).
+  Monólogo (uma pessoa, uma câmera, ex.: Caio Xavier): ver "Lições aprendidas".
 - Cores: entrevistador `#FCFC00FF`, entrevistado `#FFFFFFFF` (o Premiere lê/escreve `<font color=#RRGGBBAA>` no SRT).
 - Estilo (o usuário aplica no Premiere como estilo de trilha): DK Longreach 110 px, espaçamento 164, posição -662, stroke 4.
-- Ajuste de tempo só nas legendas do **entrevistado** (`-Retime cam`), 1 frame de antecedência.
+- Tempo: o do Premiere, com início encaixado no frame de cada corte (`-Retime none`, `-Snap 0.25`) — ver o estilo.
 
 ## Passo a passo
 1. Peça/receba o SRT exportado (painel Texto → ⋯ → Exportar → Exportar para arquivo SRT). Leia-o inteiro.
@@ -22,19 +28,38 @@ Script nenhum consegue ler/editar legendas já existentes no Premiere 26.5 — o
    `var ARGS={audioTrack:0, camTrack:1}; var s=$.evalFile("<$SK>/scripts/dump_timeline.jsx"); var f=new File("<$W>/dump.json"); f.encoding="UTF-8"; f.open("w"); f.write(s); f.close(); s;`
 3. **Transcrever**: `& "$SK\transcribe.ps1" -Dump "$W\dump.json" -OutDir $W` → `edit.wav` (áudio da timeline
    editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Leia o `sent.srt`.
-4. **Corrigir o texto** comparando cada legenda do SRT com a transcrição e o contexto. Escreva só as que mudam em
-   `$W\fixes.json` (UTF-8): `{"6":"aqui no Brás","22":"até R$ 2"}` (número da legenda → texto novo). Regras:
-   - mantenha a divisão e os tempos das legendas do Premiere (só troque o texto);
-   - nomes de lugares/regiões do contexto (Brás, Embu das Artes...), números e moeda (`R$ 2`, `R$ 30`);
-   - complete palavras engolidas ("O que", "eu junto", "E há quantos anos"); maiúscula no início de frase;
+4. **Reescrever as legendas** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**, o vídeo inteiro.
+   Parta do texto do Premiere + transcrição + contexto e aplique `estilo-aprendido.md` (palavras como foram faladas,
+   `pra`, algarismos, `R$15 mil`; redividir/juntar/separar). Sem acrescentar pontuação. Regras de texto:
+   - não invente fala: toda palavra tem que estar no áudio (Premiere ou Whisper); na dúvida mantenha e liste;
+   - nomes de lugares/termos do contexto (Brás, Selic, Pronampe...); complete palavras engolidas;
    - quando Whisper e Premiere discordam e o áudio é ambíguo, escolha a mais plausível e **liste para o usuário conferir**.
-5. **Cores + tempo**: `& "$SK\captions.ps1" -Srt <srt> -Out <pasta do projeto>\<nome> - corrigida.srt -WorkDir $W -Fixes "$W\fixes.json"`
-   A saída lista cada legenda (falante, início antigo → novo). Confira as perguntas do entrevistador: devem estar
-   como `other`. Legendas em "REVISAR" mantiveram o tempo original (Whisper discordou > 0,6 s).
+   (Modo antigo, só trocar texto mantendo a divisão do Premiere: `fixes.json` `{"6":"aqui no Brás"}` + `-Fixes`.)
+5. **Tempo + cores**: `& "$SK\captions.ps1" -Srt <srt do Premiere> -Out <pasta do projeto>\<nome> - corrigida.srt -WorkDir $W -Texto "$W\texto.txt" -Retime none`
+   O tempo de cada linha vem das palavras do Premiere que ela cobre; o início que cai a ≤ 0,25 s de um corte vai
+   para o frame do corte. A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM LEGENDA
+   NOVA**: em cada um, divida a linha do `texto.txt` ali (se fizer sentido) e rode de novo. Em entrevista, confira
+   as perguntas do entrevistador: devem estar como `other`.
 6. **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`
    (se falhar, use a ferramenta `import_captions` + `createCaptionTrack`). Uma trilha nova é criada; a antiga continua lá.
-7. Relate: o que mudou no texto (tabela antes/depois), quais ficaram para conferir, que é preciso desativar a
-   trilha antiga e aplicar o estilo de trilha na nova, e que o projeto não foi salvo.
+7. Relate: o que mudou no texto (exemplos antes/depois e o que foi redividido), quais ficaram para conferir, que é
+   preciso desativar a trilha antiga e aplicar o estilo de trilha na nova, e que o projeto não foi salvo.
+   Lembre o usuário: depois de corrigir, exportar a trilha dele como `<nome> - final.srt` e pedir "aprende com essa".
+
+## Aprender com a correção do usuário ("aprende com essa legenda")
+O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e com a do agente, se houver):
+1. Ache os arquivos: SRT final do usuário, SRT cru do Premiere, `<nome> - corrigida.srt` do agente e a pasta
+   `legendas-trabalho\<nome>\` (tem `words.csv` e `dump.json` da época). Sem `words.csv`, transcreva (passos 2–3).
+2. **Ele costuma mexer nos cortes depois de exportar.** Tire um dump da timeline atual (`dump-agora.json`, passo 2)
+   e passe os dois, senão as comparações de tempo saem erradas.
+3. `node "$SK\aprender.mjs" --final <final.srt> --premiere <premiere.srt> --agente <corrigida.srt> --words words.csv --dump dump.json --dump-agora dump-agora.json --out <legendas-trabalho\<nome>\aprendizado>`
+   → `relatorio.md` (tamanho, divisão, pontuação, números, trocas de texto, tempo) e `lado-a-lado.txt`
+   (cada legenda dele × a do Premiere e a do agente). Leia os dois.
+4. Atualize **`estilo-aprendido.md`**: confirme, corrija ou acrescente regras, com exemplos reais e números; some o
+   vídeo à "Base" e ao "Histórico". Regra que só apareceu num tipo de vídeo (entrevista/monólogo, cliente) fica
+   marcada assim. Coisa estranha (legenda vazia, letra solta) vai para "A confirmar", não vira regra.
+5. Para testar o tempo: rode o passo 5 com as linhas do usuário como `texto.txt` e compare com o final dele.
+
 
 ## Lições aprendidas
 - As marcações de tempo do Whisper variam entre rodadas e às vezes erram ~1 s (ex.: "para nascer"); por isso o
@@ -53,7 +78,7 @@ Script nenhum consegue ler/editar legendas já existentes no Premiere 26.5 — o
   cliente ("Caio, fui até o banco...") são da mesma pessoa/câmera: deixe brancas e avise o usuário.
 - O SRT exportado pode ter outro nome que o informado (ex.: pediram `sequencia01.srt`, no disco era
   `Sequência 01.srt`): confira com `Get-ChildItem` e compare com a duração da sequência ativa.
-- Premiere escreve dinheiro como `15000 R$` / `1 R$` / `2 milhões R$`: troque por `R$ 15 mil`, `R$ 1`, `R$ 2 milhões`.
+- Premiere escreve dinheiro como `15000 R$` / `1 R$` / `2 milhões R$`: troque pelo formato do estilo (`R$15 mil`, `R$1`, `R$2 milhões`).
 - `captions.ps1` (corrigido em 30/10/2026): a checagem de 0,6 s agora roda antes de prender o início em
   `anterior + 0,1` (antes, um início muito errado era "preso" e aceito), legendas em REVISAR mantêm também o fim
   original, e nenhuma legenda sai com fim ≤ início (antes saíam coisas como `39,200 --> 32,570`). Sempre valide
