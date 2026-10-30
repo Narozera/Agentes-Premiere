@@ -88,6 +88,10 @@ aparece na tela.
   vídeos: Mãe Vitin 94/97, Médico 103/105, MACHADO 134/137); o agente deixava 10–19. O `captions.ps1` agora resolve sozinho: encaixa o início na troca (prioridade sobre
   os cortes de áudio) e divide a legenda que atravessa, pondo cada palavra do lado em que o Whisper a ouviu
   ("DIVIDIDAS NA TROCA DE CAMERA"). Médico às cegas: início a ≤ 2 frames 77,1% → 83,0%; atravessando 19 → 0.
+- **Vale para todo corte visível, não só troca de câmera** (pedido do usuário, confirmado): nos cortes do mesmo take que
+  aparecem na tela, ele começa legenda em 100% (Mãe Vitin 3/3, Médico 5/5, MACHADO 11/11) e nunca atravessa. Corte do
+  V1 **escondido embaixo da câmera 2** não é corte (22–24 por vídeo; ele ignora). O `dump_timeline.jsx` grava em
+  `cuts` só os cortes da imagem que aparece, e o `captions.ps1` encaixa e divide em todos eles ("DIVIDIDAS NO CORTE").
 - **Toda vez que a timeline tem um corte (jump cut), começa uma legenda nova exatamente no frame do corte**
   (Caio: 208 de 216 cortes; GUALDEZI: 98 de 104; MACHADO: 143 de 159). **Corte também é troca de câmera** (entrada/saída do clipe
   da câmera 2), não só corte no áudio: `Lisboa!` começa em 1,066 s, onde entra a câmera 2. O `captions.ps1` encaixa com `-Snap 0.25` e lista os cortes

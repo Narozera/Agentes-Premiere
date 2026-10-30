@@ -26,7 +26,8 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
 1. Peça/receba o SRT exportado (painel Texto → ⋯ → Exportar → Exportar para arquivo SRT). Leia-o inteiro.
 2. **Dados da timeline** → `$W\dump.json`:
    `var ARGS={audioTrack:0, camTrack:1}; var s=$.evalFile("<$SK>/scripts/dump_timeline.jsx"); var f=new File("<$W>/dump.json"); f.encoding="UTF-8"; f.open("w"); f.write(s); f.close(); s;`
-   Traz os clipes do áudio, a câmera do entrevistado e `overlay` (animações/gráficos nas trilhas acima das câmeras).
+   Traz os clipes do áudio, a câmera do entrevistado, `cuts` (cortes da imagem que aparece na tela) e `overlay`
+   (animações/gráficos nas trilhas acima das câmeras).
 3. **Transcrever**: `& "$SK\transcribe.ps1" -Dump "$W\dump.json" -OutDir $W` → `edit.wav` (áudio da timeline
    editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Leia o `sent.srt`.
 4. **Reescrever as legendas** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**, o vídeo inteiro.
@@ -41,8 +42,8 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
 5. **Tempo + cores**: `& "$SK\captions.ps1" -Srt <srt do Premiere> -Out <pasta do projeto>\<nome> - corrigida.srt -WorkDir $W -Texto "$W\texto.txt" -Retime none`
    O tempo de cada linha vem das palavras do Premiere que ela cobre, 1 frame mais cedo (`-Lead`); o início que cai
    a ≤ 0,25 s de um corte (clipe do áudio ou troca de câmera) vai para o frame do corte; o que começa embaixo de uma
-   animação/gráfico sai (**TIRADAS**); legenda que atravessa troca de câmera (= troca de pessoa) é dividida
-   na troca (**DIVIDIDAS NA TROCA DE CAMERA**) — por isso o `camTrack` do dump precisa ser a câmera do entrevistado. A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM
+   animação/gráfico sai (**TIRADAS**); legenda que atravessa um corte visível (troca de câmera = troca de pessoa, ou corte
+   do mesmo take na tela) é dividida no corte (**DIVIDIDAS NO CORTE**); cortes do V1 escondidos embaixo da câmera 2 não contam — por isso o `camTrack` do dump precisa ser a câmera do entrevistado. A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM
    LEGENDA NOVA**: em cada um, divida a linha do `texto.txt` ali (se fizer sentido) e rode de novo. Em entrevista,
    confira as perguntas do entrevistador: devem estar como `other`.
 6. **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`
