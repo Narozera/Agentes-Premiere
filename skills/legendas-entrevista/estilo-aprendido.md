@@ -3,8 +3,20 @@
 Regras tiradas comparando a legenda final do usuário com a do Premiere e a do agente (`scripts/aprender.mjs`).
 Se uma regra conflitar com um pedido do usuário, o pedido vence.
 
-Base: 2 vídeos — Caio Xavier (advogado, monólogo, 564 legendas) e GUALDEZI "Mãe Vitin + Bispo + Aposentada"
-(3 entrevistas de rua, 348 legendas). Confiança cresce a cada vídeo novo.
+Base: 3 vídeos — Caio Xavier (advogado, monólogo, 564 legendas), GUALDEZI "Mãe Vitin + Bispo + Aposentada"
+(3 entrevistas de rua, 348 legendas) e MACHADO "Kilter + Armamento + 2 Esquerda" (4 entrevistas de política, 567).
+Confiança cresce a cada vídeo novo. **Leia também `glossario.md`** (nomes e termos por cliente/assunto).
+
+## Taxa de acerto medida (`aprender.mjs`, seção "Taxa de acerto")
+| vídeo | versão | palavras | divisão | início a ≤ 2 frames |
+|---|---|---|---|---|
+| Caio | Premiere | 92,3% | 85,4% | 60,2% |
+| Caio | agente antigo (antes de aprender) | 96,8% | 87,1% | 39,8% |
+| MACHADO | Premiere | 94,3% | 83,0% | 79,0% |
+| MACHADO | **agente às cegas** (só com Caio + GUALDEZI) | **97,3%** | **86,6%** | 78,4% |
+
+Meta: subir palavras e divisão a cada vídeo novo. O tempo depende de quanto o usuário mexe em cada vídeo (ele varia
+0–3 frames em relação ao Premiere), então ~65–80% a até 2 frames é perto do teto.
 O usuário legenda monólogos e entrevistas do mesmo jeito; a única diferença é a cor por falante.
 
 ## Foco (pedido do usuário em 30/10/2026)
@@ -41,12 +53,12 @@ aparece na tela.
   legende normalmente.
 
 ## 2. Tempo certo
-- **Use o tempo do Premiere 2 frames mais cedo, não o do Whisper**: o usuário entra 1 frame (Caio) a 3 frames
-  (entrevistas) antes do Premiere; o ajuste pelo Whisper ficou 0,08–0,13 s longe. → `captions.ps1 -Retime none`
-  (no modo `-Texto`, o `-Lead 0.033` padrão já adianta os 2 frames). Testado com o texto do próprio usuário:
-  Caio 63% e entrevistas 54% das legendas a até 2 frames do tempo dele (erro mediano 0,017 s e 0,034 s).
+- **Use o tempo do Premiere 1 frame mais cedo, não o do Whisper**: o usuário entra 0 (MACHADO), 1 (Caio) ou
+  3 frames (GUALDEZI) antes do Premiere; o ajuste pelo Whisper ficou 0,08–0,13 s longe. → `captions.ps1 -Retime
+  none` (no modo `-Texto`, o `-Lead 0.017` padrão adianta 1 frame — o melhor no conjunto dos 3 vídeos: 63,9% a
+  até 2 frames; com 0 ou 2 frames, 62–63%).
 - **Toda vez que a timeline tem um corte (jump cut), começa uma legenda nova exatamente no frame do corte**
-  (Caio: 208 de 216 cortes; entrevistas: 98 de 104). **Corte também é troca de câmera** (entrada/saída do clipe
+  (Caio: 208 de 216 cortes; GUALDEZI: 98 de 104; MACHADO: 143 de 159). **Corte também é troca de câmera** (entrada/saída do clipe
   da câmera 2), não só corte no áudio: `Lisboa!` começa em 1,066 s, onde entra a câmera 2. O `captions.ps1` encaixa com `-Snap 0.25` e lista os cortes
   sem legenda: divida o texto ali.
 - Em relação à fala, a legenda entra ~0,08–0,10 s **depois** do início da palavra marcado pelo Whisper (igual nos
@@ -57,6 +69,14 @@ aparece na tela.
   proporção das palavras) e onde o Premiere pulou a fala (sem tempo próprio).
 
 ## 3. Divisão (porque define o tempo de cada palavra)
+- **Nome próprio e termo composto nunca se dividem** (`Flávio Bolsonaro`, `Estados Unidos`, `Banco Master`,
+  `Lava Jato`, `Código Penal`): o Premiere quebra ("Flávio | Bolsonaro") e o agente às cegas copiou — erro mais comum.
+- **"verbo + que/de/é" fica no FIM da legenda e a próxima começa no nome/número**: `Eu acho que | o Flávio`,
+  `Você acha que | o Lula peca`, `Então é | Flávio Bolsonaro!`, `há mais de | 20 anos`, `é | 19`.
+- **Lista: um item por legenda**: `Petrolão | Lava Jato | Banco Master | INSS`, `Podemos | PL | União | PP`,
+  `onipresente | onisciente`, `13 | 13 | 13`.
+- Não deixe pronome ou palavra curta sozinha quando foi falada junto com a seguinte (o Premiere deixa):
+  `Eu | tô trabalhando` ✗ → `Eu tô trabalhando` ✓; `Se Deus | quiser` ✗ → `Se Deus quiser` ✓.
 - 1 linha, **1 a 3 palavras** (no máximo 5), **até ~20 caracteres**. Nas entrevistas, ainda mais curto: 88% com
   1–2 palavras, mediana de 9 caracteres (fala rápida de rua). Monólogo: 2–3 palavras, mediana de 11 caracteres.
 - Pedaço de frase com sentido: **não quebre entre artigo/preposição/possessivo e a palavra seguinte**
@@ -79,5 +99,8 @@ aparece na tela.
 ## Histórico
 - 30/10/2026 — Caio Xavier, Sequência 01 (monólogo). Relatório: `D:\EDIÇÃO\Caio Xavier\29-10\9 VIDEOS\legendas-trabalho\sequencia01\aprendizado\`.
 - 30/10/2026 — usuário definiu o foco: palavras e tempo; visual é com ele.
+- 30/10/2026 — MACHADO, Kilter + Armamento + 2 Esquerda (4 entrevistas, política; SRT do Premiere + Whisper + cortes
+  dos vídeos finais). Teste às cegas do agente (texto feito sem ver a legenda do usuário): palavras 97,3%, divisão
+  86,6%. Relatórios na pasta `legendas-trabalho/sequencia01` do projeto.
 - 30/10/2026 — GUALDEZI, Mãe Vitin + Bispo + Aposentada (3 entrevistas numa sequência; SRT do Premiere + timeline lida no
   Premiere: cortes, câmeras e animações). Relatório: `D:EDIÇÃOGUALDEZIMÃE VITIN + BISPO + APOSENTADAlegendas-trabalhosequencia01aprendizado`.

@@ -8,7 +8,7 @@ param(
   [string]$CamColor = '#FFFFFFFF',           # captions while the interviewee camera is on screen
   [string]$OtherColor = '#FCFC00FF',         # captions on the other camera (interviewer)
   [ValidateSet('cam', 'other', 'both', 'none')][string]$Retime = 'cam',
-  [double]$Lead = 0.033,                     # captions appear this much before the first word (1 frame)
+  [double]$Lead = 0.017,                     # captions appear this much early (1 frame at 60 fps; best over 3 videos)
   [double]$Snap = 0.25                       # a caption start this close to a cut moves onto the cut (0 = off)
 )
 # 1) text fixes  2) color by camera coverage  3) retime starts to Whisper word onsets (refined by audio energy)
@@ -60,7 +60,7 @@ if ($Texto) {
   $nt = @(); for ($i = 0; $i -lt $lines.Count; $i++) { foreach ($tok in ((Norm $lines[$i]) -split '\s+' | Where-Object { $_ })) { $nt += [pscustomobject]@{ tok = $tok; cap = $i } } }
   $pa = [CapUtil]::Align([string[]]@($nt | ForEach-Object tok), [string[]]@($pt | ForEach-Object tok))
   $s0 = @{}; $e0 = @{}
-  # the user's captions come in ~2 frames ($Lead) before Premiere's (tested on 2 videos: median error 1-2 frames)
+  # the user's captions come in 0-3 frames before Premiere's; $Lead = 1 frame scored best over 3 videos
   for ($k = 0; $k -lt $nt.Count; $k++) { if ($pa[$k] -ge 0) { $ci = $nt[$k].cap; if (-not $s0.ContainsKey($ci)) { $s0[$ci] = [math]::Max(0.0, $pt[$pa[$k]].s - $Lead) }; $e0[$ci] = $pt[$pa[$k]].e } }
   $caps = @(); $cursor = 0.0
   for ($i = 0; $i -lt $lines.Count; $i++) {

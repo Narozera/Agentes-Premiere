@@ -11,7 +11,7 @@ Ferramentas: MCP `premiere-pro` (`execute_extendscript`, `import_captions`), Pow
 Script nenhum consegue ler/editar legendas já existentes no Premiere 26.5 — o caminho é exportar SRT → corrigir → importar.
 
 ## Antes de tudo: o que o usuário quer
-Leia **`estilo-aprendido.md`** (nesta pasta) inteiro. Ele foi tirado das legendas que o próprio usuário corrigiu.
+Leia **`estilo-aprendido.md`** e **`glossario.md`** (nesta pasta) inteiros. Ele foi tirado das legendas que o próprio usuário corrigiu.
 **Foco: palavras certas e tempo certo** (e a divisão, porque ela decide o tempo). Pontuação, maiúsculas e visual o
 usuário faz à mão — não acrescente. As regras abaixo só valem onde esse arquivo não disser outra coisa.
 
@@ -30,14 +30,14 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
 3. **Transcrever**: `& "$SK\transcribe.ps1" -Dump "$W\dump.json" -OutDir $W` → `edit.wav` (áudio da timeline
    editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Leia o `sent.srt`.
 4. **Reescrever as legendas** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**, o vídeo inteiro.
-   Parta do texto do Premiere + transcrição + contexto e aplique `estilo-aprendido.md` (palavras como foram faladas,
+   Parta do texto do Premiere + transcrição + contexto e aplique `estilo-aprendido.md` e `glossario.md` (palavras como foram faladas, nomes inteiros,
    `pra`, algarismos, `R$15 mil`; redividir/juntar/separar). Sem acrescentar pontuação. Regras de texto:
    - não invente fala: toda palavra tem que estar no áudio (Premiere ou Whisper); na dúvida mantenha e liste;
    - nomes de lugares/termos do contexto (Brás, Selic, Pronampe...); complete palavras engolidas;
    - quando Whisper e Premiere discordam e o áudio é ambíguo, escolha a mais plausível e **liste para o usuário conferir**.
    (Modo antigo, só trocar texto mantendo a divisão do Premiere: `fixes.json` `{"6":"aqui no Brás"}` + `-Fixes`.)
 5. **Tempo + cores**: `& "$SK\captions.ps1" -Srt <srt do Premiere> -Out <pasta do projeto>\<nome> - corrigida.srt -WorkDir $W -Texto "$W\texto.txt" -Retime none`
-   O tempo de cada linha vem das palavras do Premiere que ela cobre, 2 frames mais cedo (`-Lead`); o início que cai
+   O tempo de cada linha vem das palavras do Premiere que ela cobre, 1 frame mais cedo (`-Lead`); o início que cai
    a ≤ 0,25 s de um corte (clipe do áudio ou troca de câmera) vai para o frame do corte; o que começa embaixo de uma
    animação/gráfico sai (**TIRADAS**). A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM
    LEGENDA NOVA**: em cada um, divida a linha do `texto.txt` ali (se fizer sentido) e rode de novo. Em entrevista,
@@ -57,11 +57,18 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
 3. `node "$SK\aprender.mjs" --final <final.srt> --premiere <premiere.srt> --agente <corrigida.srt> --words words.csv --dump dump.json --dump-agora dump-agora.json --out <legendas-trabalho\<nome>\aprendizado>`
    → `relatorio.md` (tamanho, divisão, pontuação, números, trocas de texto, tempo) e `lado-a-lado.txt`
    (cada legenda dele × a do Premiere e a do agente). Leia os dois.
-4. Atualize **`estilo-aprendido.md`**: confirme, corrija ou acrescente regras, com exemplos reais e números; some o
+4. Copie a linha da **Taxa de acerto** do relatório para a tabela do `estilo-aprendido.md` (é assim que se vê
+   se o agente está melhorando). Nomes/termos novos e erros de audição vão para **`glossario.md`**.
+   Atualize **`estilo-aprendido.md`**: confirme, corrija ou acrescente regras, com exemplos reais e números; some o
    vídeo à "Base" e ao "Histórico". Regra que só apareceu num tipo de vídeo (entrevista/monólogo, cliente) fica
    marcada assim. Coisa estranha (legenda vazia, letra solta) vai para "A confirmar", não vira regra.
-5. Para testar o tempo: rode o passo 5 com as linhas do usuário como `texto.txt` e compare com o final dele.
-6. **Sem a sequência aberta** (só o SRT final + áudios renderizados + vídeos finais): monte um áudio único com cada
+5. **Teste às cegas** (a melhor medida): antes de ler a legenda do usuário a fundo, peça a um subagente que escreva o
+   `texto.txt` só com o SRT do Premiere, `sent.srt`/`words.csv` e as regras (sem acesso à legenda do usuário nem
+   ao Premiere), monte o SRT com o passo 5 e rode o `aprender.mjs` com `--agente`. A linha "agente" da Taxa de
+   acerto é o quanto ele acertaria de verdade; as listas "Fronteiras vs agente" e "Trocas de texto: agente" mostram
+   o que ensinar.
+6. Para testar o tempo: rode o passo 5 com as linhas do usuário como `texto.txt` e compare com o final dele.
+7. **Sem a sequência aberta** (só o SRT final + áudios renderizados + vídeos finais): monte um áudio único com cada
    áudio na posição do seu bloco na sequência (os buracos grandes do SRT mostram onde cada entrevista começa;
    ffmpeg `adelay` + `amix`), transcreva com `whisper-cli ... -ml 1 -sow -ocsv -dtw large.v3.turbo`, e ache os
    cortes nos vídeos finais com `ffmpeg -vf "scale=270:-2,select='gt(scene,0.08)',metadata=print:file=-" -f null -`.

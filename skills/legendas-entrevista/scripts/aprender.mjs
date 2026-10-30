@@ -103,6 +103,34 @@ const R = [];
 const h = s => R.push('', `## ${s}`, '');
 R.push(`# Estilo de legenda — ${path.basename(args.final)}`, '', `Gerado por aprender.mjs em ${new Date().toISOString().slice(0, 10)}.`);
 
+// --- taxa de acerto: quanto cada versão já bate com a do usuário (palavras, divisão, tempo)
+h('Taxa de acerto (quanto já bate com a legenda do usuário)');
+R.push('| versão | palavras certas | divisão certa | início a ≤ 2 frames |', '|---|---|---|---|');
+for (const [lab, caps, T] of [['Premiere', pre, preT], ['agente', age, ageT], ['Whisper', null, wt]]) {
+  if (!T) continue;
+  const ops = align(T, finT);
+  const eq = ops.filter(([i, j]) => i >= 0 && j >= 0 && T[i].n === finT[j].n).length;
+  const words = `${(100 * eq / finT.length).toFixed(1)}% (${finT.length - eq} erradas ou faltando, ${ops.filter(([, j]) => j < 0).length} a mais)`;
+  let div = '-', tim = '-';
+  if (caps) {
+    const j2i = new Map(ops.filter(([i, j]) => i >= 0 && j >= 0).map(([i, j]) => [j, i]));
+    const opens = (i, X) => i === 0 || X[i].cap !== X[i - 1].cap;
+    let bTot = 0, bOk = 0, tTot = 0, tOk = 0;
+    for (let j = 0; j < finT.length; j++) {
+      if (!opens(j, finT)) continue;
+      const i = j2i.get(j), same = i !== undefined && opens(i, T);
+      if (j > 0) { bTot++; if (same) bOk++; }
+      // tempo: só as legendas que começam na mesma palavra nas duas versões
+      if (same && caps[T[i].cap].sNow != null) { tTot++; if (Math.abs(fin[finT[j].cap].s - caps[T[i].cap].sNow) <= 0.034) tOk++; }
+    }
+    div = `${(100 * bOk / bTot).toFixed(1)}% (${bOk}/${bTot})`;
+    if (tTot) tim = `${(100 * tOk / tTot).toFixed(1)}% (${tOk}/${tTot})`;
+  }
+  R.push(`| ${lab} | ${words} | ${div} | ${tim} |`);
+}
+R.push('', 'Palavras: sem acento/maiúscula/pontuação, `para`≠`pra`. Divisão: cortes de legenda do usuário que a versão',
+  'também tem. Início: das legendas que começam na mesma palavra, quantas entram a até 2 frames (0,034 s) do usuário.');
+
 // --- formato
 h('Tamanho e divisão');
 const sf = shape(fin);
@@ -115,20 +143,20 @@ const firstW = fin.map(c => norm(c.text.split(/\s+/)[0] || '')), lastW = fin.map
 R.push('', `Primeira palavra mais comum: ${hist(firstW).split(' · ').slice(0, 15).join(' · ')}`);
 R.push(`Última palavra mais comum: ${hist(lastW).split(' · ').slice(0, 15).join(' · ')}`);
 
-if (pre) {
-  // fronteiras de legenda medidas em posição de palavra no alinhamento Premiere -> final
-  const ops = align(preT, finT);
-  const preB = new Set(), finB = new Set(); let pos = 0; const pairAt = [];
-  for (const [i, j] of ops) { if (i >= 0 && j >= 0) { pairAt.push([i, j]); } }
-  // posição j do final -> i do premiere (só pares iguais/subst)
-  const j2i = new Map(pairAt.map(([i, j]) => [j, i]));
-  for (let j = 1; j < finT.length; j++) if (finT[j].cap !== finT[j - 1].cap) finB.add(j);
+for (const [lab, T] of [['Premiere', preT], ['agente', ageT]]) {
+  if (!T) continue;
+  // fronteiras de legenda medidas em posição de palavra no alinhamento versão -> final
+  const ops = align(T, finT);
+  const j2i = new Map(ops.filter(([i, j]) => i >= 0 && j >= 0).map(([i, j]) => [j, i]));
+  const finB = new Set(); for (let j = 1; j < finT.length; j++) if (finT[j].cap !== finT[j - 1].cap) finB.add(j);
+  const ctx = (j, sep) => `${finT.slice(Math.max(0, j - 3), j).map(t => t.raw).join(' ')} ${sep} ${finT.slice(j, j + 3).map(t => t.raw).join(' ')}`;
+  const nEx = lab === 'agente' ? 30 : 20;
   let kept = 0, added = 0, removed = 0; const addEx = [], remEx = [];
-  for (const j of finB) { const i = j2i.get(j); if (i !== undefined && i > 0 && preT[i].cap !== preT[i - 1].cap) kept++; else { added++; if (addEx.length < 12) addEx.push(`…${finT.slice(Math.max(0, j - 3), j).map(t => t.raw).join(' ')} | ${finT.slice(j, j + 3).map(t => t.raw).join(' ')}…`); } }
-  for (let j = 1; j < finT.length; j++) { const i = j2i.get(j); if (i !== undefined && i > 0 && preT[i].cap !== preT[i - 1].cap && !finB.has(j)) { removed++; if (remEx.length < 20) remEx.push(`${finT.slice(Math.max(0, j - 3), j).map(t => t.raw).join(' ')} ⟷ ${finT.slice(j, j + 3).map(t => t.raw).join(' ')}`); } }
-  R.push('', `**Fronteiras vs Premiere:** mantidas ${kept} · juntou (tirou corte do Premiere) ${removed} · separou (corte novo) ${added}.`);
-  R.push('', 'Exemplos de onde o usuário JUNTOU legendas do Premiere (⟷ = corte que ele tirou):', ...remEx.map(x => `- ${x}`));
-  R.push('', 'Exemplos de onde o usuário criou corte NOVO (| = corte dele):', ...addEx.map(x => `- ${x}`));
+  for (const j of finB) { const i = j2i.get(j); if (i !== undefined && i > 0 && T[i].cap !== T[i - 1].cap) kept++; else { added++; if (addEx.length < nEx) addEx.push(ctx(j, '|')); } }
+  for (let j = 1; j < finT.length; j++) { const i = j2i.get(j); if (i !== undefined && i > 0 && T[i].cap !== T[i - 1].cap && !finB.has(j)) { removed++; if (remEx.length < nEx) remEx.push(ctx(j, '⟷')); } }
+  R.push('', `**Fronteiras vs ${lab}:** mantidas ${kept} · juntou (tirou corte do ${lab}) ${removed} · separou (corte novo) ${added}.`);
+  R.push('', `Onde o usuário JUNTOU o que o ${lab} separou (⟷ = corte que ele tirou):`, ...remEx.map(x => `- ${x}`));
+  R.push('', `Onde o usuário SEPAROU o que o ${lab} juntou (| = corte dele):`, ...addEx.map(x => `- ${x}`));
 }
 
 // --- escrita
