@@ -102,3 +102,20 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
   `anterior + 0,1` (antes, um início muito errado era "preso" e aceito), legendas em REVISAR mantêm também o fim
   original, e nenhuma legenda sai com fim ≤ início (antes saíam coisas como `39,200 --> 32,570`). Sempre valide
   o SRT final (fim > início, inícios em ordem) antes de importar.
+- `transcribe.ps1` (corrigido em 30/10/2026, ERIC "3 IBIRA"): a variável `$model` colidia com o parâmetro `$Model`
+  (PowerShell não diferencia maiúsculas; o ValidateSet rejeitava o caminho), então o modelo era procurado como
+  `large-v3` na pasta atual e **baixado de novo (3 GB) no diretório de trabalho**. Agora é `$modelPath`. Se aparecer um
+  arquivo `large-v3` solto em alguma pasta, é sobra disso.
+- **Whisper large-v3 entra em laço** depois de um buraco de silêncio entre entrevistas (ERIC: a 3ª entrevista inteira
+  virou a mesma frase repetida em `sent.srt`/`words.csv`) e inventa fala no silêncio ("O que você espera de um homem?"
+  num buraco sem clipe de áudio). Sempre olhe o `sent.srt` atrás de linhas repetidas; se houver, corte o trecho do
+  `edit.wav` (ffmpeg `-ss`) e transcreva de novo com `-mc 0` (sem contexto), somando o início às marcas de tempo, e
+  tire do `words.csv` as palavras que caem onde não há clipe no `dump.audio`. Trechos curtos (2–4 s, `-mc 0 -nt`) são
+  um bom jeito de desempatar Premiere × Whisper numa palavra.
+- **Câmera 1 pode ser plano aberto com os dois** (ERIC: V1 = plano aberto entrevistador + entrevistada, V2 = close
+  dela). Aí a entrevistada também fala com V1 no ar e a cor por câmera erra (~30 legendas dela ficariam amarelas).
+  Confira um quadro de cada câmera (ffmpeg no `media` + `in` do dump) e, se for assim, pinte pelo falante (perguntas
+  amarelas, respostas brancas) e avise o usuário.
+- A regra do `captions.ps1` "legenda curta entre duas do outro falante segue as vizinhas" pinta de amarelo as
+  **respostas de uma palavra** no meio de perguntas (ERIC: `Rosa`, `7`, `Boa`, `Solteira`, `Interfere`), mesmo com a
+  câmera 2 no ar. Em entrevista de perguntas rápidas, confira a cor de toda legenda de 1 palavra.
