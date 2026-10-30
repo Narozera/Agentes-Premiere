@@ -34,6 +34,11 @@ Scripts em `~/.claude/skills/reenquadrar-entrevistado/scripts/` (abaixo, `$SK`).
    ```
    `in`/`dur` vêm do passo 1 (in = inPoint em segundos da mídia). `faceX`/`headY` = centro do rosto e topo da
    cabeça **no frame do meio** do clipe, em pixels da fonte (passo 3). `zoom` = [escala inicial, final].
+   **Proxies:** copie o `"proxy"` de cada clipe do passo 1 para o job (`{"index":0,"media":"...","proxy":"...", ...}`).
+   Todos os scripts decodificam o proxy quando ele existe e continuam medindo em pixels da fonte (`srcW/srcH` são os
+   do ORIGINAL). O usuário sempre gera proxies (Sony e iPhone em 4K). Teste no ERIC "3 IBIRA" (100 clipes, Sony 4K,
+   proxy 540×960): rastreamento 2,5× e verificação 2× mais rápidos, posição igual (mediana 0 px, 90% ≤ 4 px em
+   1.706 amostras). `"noProxy": true` no job força os originais (ex.: proxy com outro enquadramento/proporção).
 3. **Medir o meio de cada clipe**: `& "$SK\scripts\measure_sheet.ps1" -Job job.json -Clips 0,1,2,3 -Out m0.png`
    (4 por folha) e leia a imagem. A grade está em pixels da fonte (rótulos brancos nas linhas vermelhas;
    linha fina a cada 108 px). Anote faceX (centro do rosto, não do cabelo) e headY (topo do cabelo/tiara).
@@ -114,8 +119,10 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
 - Clipes de b-roll/cutaway no meio da câmera 2 (outra cena, sem o entrevistado): não aplique; relate.
 - Se só o out-point de um clipe mudou (trim no fim, in igual), os keyframes continuam válidos: basta cortar os keys
   depois da nova duração (não precisa rastrear de novo).
-- **`execute_extendscript` só devolve o que vier de `return`**: use `return $.evalFile("...")` (sem `return` volta
-  "undefined"). Em literais de objeto do ExtendScript, `in` como chave (`{in: 1}`) quebra o script inteiro — use `inp`.
+- **`execute_extendscript` muda de comportamento entre versões da ponte**: em 2026-10-29 só devolvia o que vinha de
+  `return`; em 2026-10-30 qualquer `return` no topo dava "EvalScript error" e o certo era terminar com a expressão
+  (`...; $.evalFile("...");` ou `JSON.stringify(x)`). Teste com `JSON.stringify({a:1})` e, se falhar, `return JSON.stringify({a:1})`.
+  Em literais de objeto do ExtendScript, `in` como chave (`{in: 1}`) quebra o script inteiro — use `inp`.
 - **Ponte MCP "não está rodando" com o Premiere aberto**: veja `%TEMP%\premiere-mcp-bridge\bridge-heartbeat.json`; se o
   horário parou, o painel travou (janela modal aberta ou painel suspenso). Peça para fechar diálogos e reabrir
   Window > Extensions > MCP Bridge. Enquanto isso dá para adiantar medição/rastreamento/verificação (só ffmpeg).
@@ -127,3 +134,25 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
   alguns clipes. A verificação pega isso (rosto ~100 px de saída fora da régua); corrija com recorte 1:1 + linha amarela
   no valor rastreado e `manual` com 3 pontos (início/meio/fim).
 - PowerShell: não chame função de `R` — é alias de `Invoke-History`.
+- **Sony 4K "deitado" com rotação** (2026-10-30, ERIC/3 IBIRA): o ffprobe diz 3840×2160 mas com `rotation=-90`; o ffmpeg
+  gira sozinho e a imagem é 2160×3840, igual à sequência 4K. Use srcW=2160, srcH=3840. Clipes em escala 100 não têm
+  margem: TODO reposicionamento obriga a subir a escala (lá subiu +12 a +60; o keys.ps1 faz isso). Relate a lista.
+- **Folhas de verificação em 4K**: as miniaturas do verify.ps1 (432×768) são pequenas demais para medir desvio. Use
+  `scripts/verify_head.ps1` (recorte da região da cabeça do quadro de SAÍDA a 1:3, grade a cada 108 px, réguas em ciano;
+  `-RX/-RY` mudam o recorte) e `scripts/crop_sheet.ps1` (fonte a 1:2 com `-Marks "x,y;..."` desenhando cruz amarela no
+  valor rastreado) para medir correções.
+- **Referência com keyframes que não seguem o rosto** (clipe longo, 4 keys espaçados): a média do rastreamento deu
+  x=886 com espalhamento de 700-1090 — inútil. Renderize o quadro de saída da referência e leia onde fica o centro dos
+  óculos/olhos com o rosto de FRENTE (lá: ~1020) e o centro da cabeça com o rosto 3/4. Depois compare com os quadros de
+  frente da verificação: se todos os clipes do vídeo ficam deslocados igual (lá ~-90 px), a medição a olho tem viés
+  (cabelo volumoso de um lado) — corrija deslocando a régua daquele vídeo (1000 → 1090), não clipe a clipe.
+- **Rastreador deriva quando a pessoa vira de 3/4 para frente** mesmo com score > 0,85 (template pego no meio, de 3/4):
+  erro de ~100-140 px da fonte no começo/fim (clipes 88 e 98 do IBIRA). Use `manual` com 6-12 pontos medidos com cruz.
+- **Escala mínima muito acima dos vizinhos**: quando a escala mínima fica muito acima dos vizinhos (184 vs 125) por um trecho curto em
+  que a pessoa se inclina para a borda, use `"maxZoom"` (ex.: 160) e relate que o rosto sai da régua nesse trecho.
+- **Usuário editando durante o trabalho (de novo)**: a referência foi cortada em dois (99 → 100 clipes) entre a
+  verificação e a aplicação. Refaça o dump antes de aplicar; para reindexar sem rastrear de novo, insira o clipe novo
+  no job e duplique a entrada correspondente no track.json (os dois são posicionais), mova as chaves de `manual`, gere
+  keys.json e compare as strings de keys antigas×novas (devem ser idênticas). Aplique com `scripts/apply_checked.jsx`
+  (`ARGS={trackIndex, n, keysPath, only, exp:{"i":[in,dur]}}`): ele confere nº de clipes e in/duração de cada clipe do
+  lote antes de chamar o apply_keys.

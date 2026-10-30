@@ -16,7 +16,9 @@ Siga o procedimento da skill em `C:\Users\Gustavo\.claude\skills\reenquadrar-ent
    outras réguas ou outra resolução, use os valores pedidos.
 3. Faça a verificação completa (passo 6) de **todos** os clipes antes de aplicar, corrija com medições manuais
    (passo 7) e só então aplique (passo 8). Nunca aplique sem ter olhado as folhas de verificação.
-4. Use o scratchpad da sessão como pasta de trabalho. Não salve o projeto do Premiere.
+4. Use o scratchpad da sessão como pasta de trabalho (caminho curto). Não salve o projeto do Premiere.
+5. Use os **proxies** do projeto: o `dump_clips.jsx` traz o `proxy` de cada clipe; ponha no `job.json` e os scripts
+   decodificam o proxy sozinhos (bem mais rápido, mesma precisão). Sem proxy, usam o original.
 
 Ao terminar, responda em português com: quantos clipes foram posicionados, quais precisaram de correção manual e
 por quê, quais têm algo na frente da câmera (é da gravação), se alguma escala precisou subir para cobrir o quadro,

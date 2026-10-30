@@ -53,7 +53,7 @@ foreach ($c in $j.clips) {
   $dur = [double]$c.dur; $ci = [int]$c.index; $off = $dur / 2 - [math]::Floor($dur / 2 * 10) / 10; $in = [double]$c.in + $off
   $raw = "$OutDir\frames\c$ci.gray"
   # per-clip "media" overrides the job's (several takes/files on the same track)
-  $media = if ($c.media) { $c.media } else { $j.media }
+  $media = Get-Src $c $j
   & $ff -v error -y -ss (Fmt $in) -t (Fmt ($dur + 0.05)) -i $media -vf "fps=10,scale=$([FaceTrack]::W):$([FaceTrack]::H),format=gray" -f rawvideo $raw
   $refIdx = [int][math]::Floor($dur / 2 * 10)
   $str = [FaceTrack]::Run($raw, $refIdx, [int]([double]$c.faceX / $q), [int](([double]$c.headY + [double]$j.faceOffset) / $q))

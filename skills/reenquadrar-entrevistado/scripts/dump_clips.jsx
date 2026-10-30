@@ -16,7 +16,8 @@
     }
     out.clips.push({ index: i, name: c.name, start: c.start.seconds, end: c.end.seconds,
       "in": c.inPoint.seconds, dur: c.end.seconds - c.start.seconds, scale: scale,
-      media: c.projectItem ? c.projectItem.getMediaPath() : "" });
+      media: c.projectItem ? c.projectItem.getMediaPath() : "",
+      proxy: c.projectItem && c.projectItem.hasProxy() ? c.projectItem.getProxyPath() : "" });
   }
   return JSON.stringify(out);
 })();

@@ -24,3 +24,12 @@ function Get-FFmpeg {
 function Read-Job([string]$path) { [IO.File]::ReadAllText($path) | ConvertFrom-Json }
 
 function Fmt([double]$v, [string]$f = 'F3') { $v.ToString($f, $script:Inv) }
+
+function Get-Src($c, $j) {
+  # Video to decode for clip $c: its Premiere proxy when the job lists one (same picture at lower resolution; every
+  # script scales the frame to srcW x srcH first, so coordinates stay in source pixels), else the original media.
+  # "noProxy": true in the job forces the originals.
+  $m = if ($c -and $c.media) { $c.media } else { $j.media }
+  $p = if ($c -and $c.proxy) { $c.proxy } elseif (-not ($c -and $c.media)) { $j.proxy } else { $null }
+  if ($p -and -not $j.noProxy -and (Test-Path -LiteralPath $p)) { $p } else { $m }
+}

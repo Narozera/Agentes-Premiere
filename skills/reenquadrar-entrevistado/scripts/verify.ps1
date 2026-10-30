@@ -18,7 +18,7 @@ $files = @(); $n = 0
 foreach ($ci in $Clips) {
   $keys = $allKeys[$ci]; $T = $keys[$keys.Count - 1][0]; $cc = $j.clips[$ci]; $cin = [double]$cc.in
   # per-clip media/guides/speed (keys.json times are timeline offsets; media time = in + t * speed)
-  $media = if ($cc.media) { $cc.media } else { $j.media }; $spd = if ($cc.speed) { [double]$cc.speed } else { 1.0 }
+  $media = Get-Src $cc $j; $spd = if ($cc.speed) { [double]$cc.speed } else { 1.0 }
   $gx = $(if ($null -ne $cc.guideX) { [int]$cc.guideX } else { [int]$j.guideX }) - 2; $gy = $(if ($null -ne $cc.guideY) { [int]$cc.guideY } else { [int]$j.guideY }) - 2
   # -Step s: one frame every s seconds (long clips) instead of start/middle/end
   $times = if ($Step -gt 0) { $tl = @(); for ($q = 0.05; $q -lt $T; $q += $Step) { $tl += $q }; $tl + ($T - 0.05) } else { @(0.05, ($T / 2), ($T - 0.05)) }

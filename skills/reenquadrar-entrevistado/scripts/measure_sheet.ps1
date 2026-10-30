@@ -12,9 +12,9 @@ param(
 $j = Read-Job $Job; $ff = Get-FFmpeg
 $tmp = Join-Path ([IO.Path]::GetDirectoryName($Out)) 'measure_tmp'; New-Item -ItemType Directory -Force $tmp | Out-Null
 $items = @()
-if ($Clips) { foreach ($ci in $Clips) { $c = $j.clips[$ci]; $items += ,@(([double]$c.in + [double]$c.dur / 2), "clip $ci", $(if ($c.media) { $c.media } else { $j.media })) } }
+if ($Clips) { foreach ($ci in $Clips) { $c = $j.clips[$ci]; $items += ,@(([double]$c.in + [double]$c.dur / 2), "clip $ci", (Get-Src $c $j)) } }
 # -Times use the media of clip -TimesClip (if given) or the job's
-if ($Times) { $tm = if ($TimesClip -ge 0 -and $j.clips[$TimesClip].media) { $j.clips[$TimesClip].media } else { $j.media }; foreach ($t in $Times) { $items += ,@($t, "t $(Fmt $t 'F2')", $tm) } }
+if ($Times) { $tm = if ($TimesClip -ge 0) { Get-Src $j.clips[$TimesClip] $j } else { Get-Src $null $j }; foreach ($t in $Times) { $items += ,@($t, "t $(Fmt $t 'F2')", $tm) } }
 $sc = 4.0; $tw = [int]($j.srcW / $sc); $th = [int]($j.srcH / $sc)
 $font = 'fontfile=C\\:/Windows/Fonts/arialbd.ttf'
 $labels = @()
