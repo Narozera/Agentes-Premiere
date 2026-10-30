@@ -26,6 +26,7 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
 1. Peça/receba o SRT exportado (painel Texto → ⋯ → Exportar → Exportar para arquivo SRT). Leia-o inteiro.
 2. **Dados da timeline** → `$W\dump.json`:
    `var ARGS={audioTrack:0, camTrack:1}; var s=$.evalFile("<$SK>/scripts/dump_timeline.jsx"); var f=new File("<$W>/dump.json"); f.encoding="UTF-8"; f.open("w"); f.write(s); f.close(); s;`
+   Traz os clipes do áudio, a câmera do entrevistado e `overlay` (animações/gráficos nas trilhas acima das câmeras).
 3. **Transcrever**: `& "$SK\transcribe.ps1" -Dump "$W\dump.json" -OutDir $W` → `edit.wav` (áudio da timeline
    editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Leia o `sent.srt`.
 4. **Reescrever as legendas** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**, o vídeo inteiro.
@@ -36,10 +37,11 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
    - quando Whisper e Premiere discordam e o áudio é ambíguo, escolha a mais plausível e **liste para o usuário conferir**.
    (Modo antigo, só trocar texto mantendo a divisão do Premiere: `fixes.json` `{"6":"aqui no Brás"}` + `-Fixes`.)
 5. **Tempo + cores**: `& "$SK\captions.ps1" -Srt <srt do Premiere> -Out <pasta do projeto>\<nome> - corrigida.srt -WorkDir $W -Texto "$W\texto.txt" -Retime none`
-   O tempo de cada linha vem das palavras do Premiere que ela cobre; o início que cai a ≤ 0,25 s de um corte vai
-   para o frame do corte. A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM LEGENDA
-   NOVA**: em cada um, divida a linha do `texto.txt` ali (se fizer sentido) e rode de novo. Em entrevista, confira
-   as perguntas do entrevistador: devem estar como `other`.
+   O tempo de cada linha vem das palavras do Premiere que ela cobre, 2 frames mais cedo (`-Lead`); o início que cai
+   a ≤ 0,25 s de um corte (clipe do áudio ou troca de câmera) vai para o frame do corte; o que começa embaixo de uma
+   animação/gráfico sai (**TIRADAS**). A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM
+   LEGENDA NOVA**: em cada um, divida a linha do `texto.txt` ali (se fizer sentido) e rode de novo. Em entrevista,
+   confira as perguntas do entrevistador: devem estar como `other`.
 6. **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`
    (se falhar, use a ferramenta `import_captions` + `createCaptionTrack`). Uma trilha nova é criada; a antiga continua lá.
 7. Relate: o que mudou no texto (exemplos antes/depois e o que foi redividido), quais ficaram para conferir, que é
@@ -59,6 +61,12 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
    vídeo à "Base" e ao "Histórico". Regra que só apareceu num tipo de vídeo (entrevista/monólogo, cliente) fica
    marcada assim. Coisa estranha (legenda vazia, letra solta) vai para "A confirmar", não vira regra.
 5. Para testar o tempo: rode o passo 5 com as linhas do usuário como `texto.txt` e compare com o final dele.
+6. **Sem a sequência aberta** (só o SRT final + áudios renderizados + vídeos finais): monte um áudio único com cada
+   áudio na posição do seu bloco na sequência (os buracos grandes do SRT mostram onde cada entrevista começa;
+   ffmpeg `adelay` + `amix`), transcreva com `whisper-cli ... -ml 1 -sow -ocsv -dtw large.v3.turbo`, e ache os
+   cortes nos vídeos finais com `ffmpeg -vf "scale=270:-2,select='gt(scene,0.08)',metadata=print:file=-" -f null -`.
+   Com os cortes, escreva um `dump.json` (`audio`: um trecho entre cada par de cortes) e rode o `aprender.mjs` sem
+   `--premiere`. Não abra outro projeto no Premiere sem o usuário pedir: o que estiver aberto pode ter alteração não salva.
 
 
 ## Lições aprendidas

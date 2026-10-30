@@ -175,7 +175,8 @@ for (const [lab, caps, T] of [['Premiere', pre, preT], ['agente', age, ageT]]) {
 }
 if (dump && !dumpNow) R.push('(Sem --dump-agora: se o usuário mexeu nos cortes depois de exportar, as comparações de tempo ficam erradas.)');
 if (dump) {
-  const cuts = [...new Set((dumpNow || dump).audio.flatMap(a => [a.start, a.end]).map(x => +x.toFixed(3)))].sort((a, b) => a - b);
+  const tl = dumpNow || dump; // cortes = trechos do áudio de diálogo + entradas/saídas da câmera do entrevistado
+  const cuts = [...new Set([...tl.audio.flatMap(a => [a.start, a.end]), ...(tl.cam || []).flat()].map(x => +x.toFixed(3)))].sort((a, b) => a - b);
   const near = (t, arr, tol = 0.02) => arr.some(x => Math.abs(x - t) <= tol);
   const onCut = fin.filter(c => near(c.s, cuts)).length;
   const cutsInside = cuts.filter(x => x > fin[0].s && x < fin[fin.length - 1].e);

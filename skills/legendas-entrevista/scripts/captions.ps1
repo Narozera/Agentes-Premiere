@@ -60,7 +60,8 @@ if ($Texto) {
   $nt = @(); for ($i = 0; $i -lt $lines.Count; $i++) { foreach ($tok in ((Norm $lines[$i]) -split '\s+' | Where-Object { $_ })) { $nt += [pscustomobject]@{ tok = $tok; cap = $i } } }
   $pa = [CapUtil]::Align([string[]]@($nt | ForEach-Object tok), [string[]]@($pt | ForEach-Object tok))
   $s0 = @{}; $e0 = @{}
-  for ($k = 0; $k -lt $nt.Count; $k++) { if ($pa[$k] -ge 0) { $ci = $nt[$k].cap; if (-not $s0.ContainsKey($ci)) { $s0[$ci] = $pt[$pa[$k]].s }; $e0[$ci] = $pt[$pa[$k]].e } }
+  # the user's captions come in ~2 frames ($Lead) before Premiere's (tested on 2 videos: median error 1-2 frames)
+  for ($k = 0; $k -lt $nt.Count; $k++) { if ($pa[$k] -ge 0) { $ci = $nt[$k].cap; if (-not $s0.ContainsKey($ci)) { $s0[$ci] = [math]::Max(0.0, $pt[$pa[$k]].s - $Lead) }; $e0[$ci] = $pt[$pa[$k]].e } }
   $caps = @(); $cursor = 0.0
   for ($i = 0; $i -lt $lines.Count; $i++) {
     # a line with no word in common with Premiere (e.g. "Sinal 1" x "Se naum") starts where the previous one ends
@@ -122,10 +123,11 @@ if ($Retime -ne 'none') {
   for ($i = 0; $i -lt $caps.Count; $i++) { $c = $caps[$i]; if ($c.e -le $c.s) { $nextS = if ($i + 1 -lt $caps.Count) { $caps[$i + 1].s } else { $c.s + 0.5 }; $c.e = [math]::Max($c.s + 0.05, [math]::Min($c.s + 0.5, $nextS)) } }
 }
 
-# --- the user starts a new caption on every cut of the dialogue track: snap the nearest caption start onto it
+# --- the user starts a new caption on every cut (dialogue clips and camera switches): snap the nearest start onto it
 $lonely = @()
 if ($Snap -gt 0) {
-  $cuts = @($dump.audio | ForEach-Object { [double]$_.start } | Where-Object { $_ -gt 0.01 } | Sort-Object -Unique)
+  $cuts = @(@($dump.audio | ForEach-Object { [double]$_.start }) + @($dump.cam | ForEach-Object { [double]$_[0]; [double]$_[1] }) |
+    Where-Object { $_ -gt 0.01 -and $_ -lt [double]$dump.end - 0.01 } | ForEach-Object { [math]::Round($_, 3) } | Sort-Object -Unique)
   foreach ($t in $cuts) {
     $best = -1; $bd = $Snap
     for ($i = 0; $i -lt $caps.Count; $i++) { $dd = [math]::Abs($caps[$i].s - $t); if ($dd -le $bd) { $bd = $dd; $best = $i } }
@@ -137,9 +139,28 @@ if ($Snap -gt 0) {
   }
 }
 
+# --- no captions under animations/graphics (dump.overlay): the user leaves those stretches empty
+$dropped = @()
+foreach ($o in @($dump.overlay)) {
+  if ($null -eq $o) { continue }
+  $o0 = [double]$o[0]; $o1 = [double]$o[1]; $keep = @()
+  foreach ($c in $caps) {
+    # a caption that starts under the animation goes; one that starts before it just ends where the animation starts
+    # (ends were stretched to the next caption, so overlap alone would also drop the words said right before it)
+    if ($c.s -ge $o0 - 0.1 -and $c.s -lt $o1 - 0.1) { $dropped += "$($c.text) ($(Tc $c.s))"; continue }
+    if ($c.s -lt $o0 -and $c.e -gt $o0) { $c.e = $o0 }
+    $keep += $c
+  }
+  $caps = $keep
+}
+# ends that ran into a removed caption stop where the animation starts
+foreach ($o in @($dump.overlay)) { if ($null -ne $o) { foreach ($c in $caps) { if ($c.s -lt [double]$o[0] -and $c.e -gt [double]$o[0]) { $c.e = [double]$o[0] } } } }
+for ($i = 0; $i -lt $caps.Count; $i++) { $caps[$i].n = $i + 1 }
+
 $sb = New-Object Text.StringBuilder
 foreach ($c in $caps) { $col = if ($c.spk -eq 'cam') { $CamColor } else { $OtherColor }; [void]$sb.Append("$($c.n)`r`n$(Tc $c.s) --> $(Tc $c.e)`r`n<font color=$col>$($c.text)</font>`r`n`r`n") }
 [IO.File]::WriteAllText($Out, $sb.ToString(), $enc)
 $caps | ForEach-Object { '{0,3} {1,-5} {2,7} {3,7}  {4}' -f $_.n, $_.spk, $(if ($null -ne $_.old) { Fmt $_.old 'F2' } else { '' }), (Fmt $_.s 'F2'), $_.text }
+if ($dropped.Count) { "TIRADAS (embaixo de animacao/grafico): " + ($dropped -join ' | ') }
 if ($lonely.Count) { "CORTES SEM LEGENDA NOVA (divida o texto ali se fizer sentido): " + (($lonely | ForEach-Object { Tc $_ }) -join ', ') }
 if ($flagged.Count) { "REVISAR (tempo do Whisper muito diferente do Premiere, mantido o original): " + ($flagged -join ', ') }
