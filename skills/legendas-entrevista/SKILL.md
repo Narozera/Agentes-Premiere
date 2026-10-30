@@ -10,10 +10,10 @@ Ferramentas: MCP `premiere-pro` (`execute_extendscript`, `import_captions`), Pow
 `~/.claude/skills/legendas-entrevista/scripts/` (abaixo, `$SK`). Pasta de trabalho: o scratchpad da sessão (`$W`).
 Script nenhum consegue ler/editar legendas já existentes no Premiere 26.5 — o caminho é exportar SRT → corrigir → importar.
 
-## Antes de tudo: o estilo do usuário
-Leia **`estilo-aprendido.md`** (nesta pasta) inteiro. Ele foi tirado das legendas que o próprio usuário corrigiu e
-**manda mais que o texto e a divisão do Premiere**: tamanho das legendas, onde quebrar, pontuação, `pra`/`para`,
-números, dinheiro e tempo. As regras abaixo só valem onde o estilo não disser outra coisa.
+## Antes de tudo: o que o usuário quer
+Leia **`estilo-aprendido.md`** (nesta pasta) inteiro. Ele foi tirado das legendas que o próprio usuário corrigiu.
+**Foco: palavras certas e tempo certo** (e a divisão, porque ela decide o tempo). Pontuação, maiúsculas e visual o
+usuário faz à mão — não acrescente. As regras abaixo só valem onde esse arquivo não disser outra coisa.
 
 ## Padrões do usuário (confirme se o projeto for diferente)
 - Áudio de diálogo = **A1** (DJI). Câmera do entrevistado = **V2** (iPhone). Entrevistador aparece na DJI (V1).
@@ -28,9 +28,9 @@ números, dinheiro e tempo. As regras abaixo só valem onde o estilo não disser
    `var ARGS={audioTrack:0, camTrack:1}; var s=$.evalFile("<$SK>/scripts/dump_timeline.jsx"); var f=new File("<$W>/dump.json"); f.encoding="UTF-8"; f.open("w"); f.write(s); f.close(); s;`
 3. **Transcrever**: `& "$SK\transcribe.ps1" -Dump "$W\dump.json" -OutDir $W` → `edit.wav` (áudio da timeline
    editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Leia o `sent.srt`.
-4. **Reescrever as legendas no estilo do usuário** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**,
-   o vídeo inteiro. Parta do texto do Premiere + transcrição + contexto e aplique `estilo-aprendido.md`
-   (redividir, juntar, separar, pontuar, `pra`, algarismos, `R$15 mil`...). Regras de texto:
+4. **Reescrever as legendas** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**, o vídeo inteiro.
+   Parta do texto do Premiere + transcrição + contexto e aplique `estilo-aprendido.md` (palavras como foram faladas,
+   `pra`, algarismos, `R$15 mil`; redividir/juntar/separar). Sem acrescentar pontuação. Regras de texto:
    - não invente fala: toda palavra tem que estar no áudio (Premiere ou Whisper); na dúvida mantenha e liste;
    - nomes de lugares/termos do contexto (Brás, Selic, Pronampe...); complete palavras engolidas;
    - quando Whisper e Premiere discordam e o áudio é ambíguo, escolha a mais plausível e **liste para o usuário conferir**.
