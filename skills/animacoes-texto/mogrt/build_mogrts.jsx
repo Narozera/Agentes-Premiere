@@ -4,7 +4,7 @@
 //   {style:"dinheiro", out:"<folder>"}   style = key of STYLES below; out = where .mogrt/.aep go (default: this folder)
 // Each template: 1080x1920 60 fps 10 s; layers CONTROLES (null at the caption line y=1138), VALOR, ROTULO.
 // Essential properties (editable in Premiere > Essential Graphics / Effect Controls): Valor, Rotulo, Cor, Tamanho, Brilho,
-// Velocidade (%: 200 = twice as fast, 50 = half).
+// Velocidade (30 = normal, 60 = twice as fast, 15 = half; the slider goes to 100 = 3.3x).
 // The animations are expressions (springs measured from the Remotion presets in ../motion), so Valor can be any text.
 (function () {
   var A = (typeof ARGS !== "undefined" && ARGS) ? ARGS : {};
@@ -19,7 +19,7 @@
     anos: {font: "DKLongreach-Regular", color: [1, 0.102, 0.102], valor: "40 ANOS", size: 220, labelSize: 110, prefix: "Anos"}
   };
   var st = STYLES[A.style || "dinheiro"];
-  var LINE_Y = 1138, GAP = 18, REF = "thisComp.duration-0.05";
+  var LINE_Y = 1138, GAP = 18, REF = "thisComp.duration-0.05", SPEED_NORMAL = 30;
 
   // spring (damped oscillator), same shape as Remotion's spring(): f = natural frequency Hz, z = damping ratio
   var SPR = "function spr(t,f,z){if(t<=0)return 0;var w=2*Math.PI*f,wd=w*Math.sqrt(1-z*z);" +
@@ -33,8 +33,9 @@
   // per animation: expressions for the value line (delay 0) and the label (delay 0.1 s, or 0 for "queda")
   // pos(L) = extra [x,y] offset, scale(L) = %, rot(L) = deg, text(L) = Source Text, chars = per-letter selector amount
   function anims(name) {
-    // t = animation time; Velocidade (%) scales it, so 200 plays everything twice as fast (delays included)
-    var D = function (L) { return "var t=(time-inPoint)*thisComp.layer('CONTROLES').effect('Velocidade')(1)/100-" + (L == "ROTULO" && name != "queda" ? "0.1" : "0") + ";\n"; };
+    // t = animation time; Velocidade scales it (delays included). Premiere's slider stops at 100, so normal speed is
+    // SPEED_NORMAL (30) and the user has room up to 3.3x: 60 = 2x, 15 = half.
+    var D = function (L) { return "var t=(time-inPoint)*thisComp.layer('CONTROLES').effect('Velocidade')(1)/" + SPEED_NORMAL + "-" + (L == "ROTULO" && name != "queda" ? "0.1" : "0") + ";\n"; };
     var popS = function (L) { return D(L) + SPR + "var s=spr(t,2.32,0.47);"; };
     switch (name) {
       case "pop": return {
@@ -100,7 +101,7 @@
     fx.addProperty("ADBE Color Control").name = "Cor"; fx.property("Cor").property(1).setValue(st.color);
     fx.addProperty("ADBE Slider Control").name = "Tamanho"; fx.property("Tamanho").property(1).setValue(100);
     fx.addProperty("ADBE Slider Control").name = "Brilho"; fx.property("Brilho").property(1).setValue(50);
-    fx.addProperty("ADBE Slider Control").name = "Velocidade"; fx.property("Velocidade").property(1).setValue(100);
+    fx.addProperty("ADBE Slider Control").name = "Velocidade"; fx.property("Velocidade").property(1).setValue(SPEED_NORMAL);
     var tr = ctl.property("ADBE Transform Group");
     // children sit at the null's anchor: anchor 0,0 + position = the caption line in the middle of the frame
     tr.property("ADBE Anchor Point").setValue([0, 0]);

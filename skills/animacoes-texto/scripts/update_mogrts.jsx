@@ -4,6 +4,7 @@
 // <mogrtDir>/Dinheiro - Pop.mogrt).
 // Usage: var ARGS={trackIndex:4, mogrtDir:"C:/Users/Gustavo/.claude/skills/animacoes-texto/mogrt"};
 //        $.evalFile("<skill>/scripts/update_mogrts.jsx");
+// ARGS.scale = {"Velocidade": 0.3} multiplies a field when its meaning changed between versions (old 100 = new 30).
 (function () {
   var seq = app.project.activeSequence, track = seq.videoTracks[ARGS.trackIndex], TICKS = 254016000000;
   function params(comp) {
@@ -48,6 +49,7 @@
       fields.push(p.displayName);
       if (!was) continue;
       if (was.color) p.setColorValue(was.color[0], was.color[1], was.color[2], was.color[3], true);
+      else if (ARGS.scale && ARGS.scale[p.displayName]) p.setValue(was.v * ARGS.scale[p.displayName], true);
       else p.setValue(was.v, true);
     }
     var m = motion(nc), warn = "";

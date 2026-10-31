@@ -14,7 +14,10 @@ de legendas corrigido, todos em tempo de timeline).
 - `mogrt/` — **templates editáveis** (padrão). `Dinheiro - Pop/Queda/Impacto/Cascata/Contador/Roleta.mogrt`,
   o projeto-fonte `Dinheiro - animacoes.aep` (o usuário pode abrir no AE) e `build_mogrts.jsx`, que monta tudo.
   Campos editáveis no Premiere (Controle de efeitos / Gráficos essenciais): **Valor, Rótulo, Cor, Tamanho, Brilho,
-  Velocidade** (%, 200 = dobro da velocidade, 50 = metade; vale para toda a animação, atrasos incluídos).
+  Velocidade** (**30 = normal**, 60 = 2×, 90 = 3×, 15 = metade; o controle do Premiere vai só até 100, por isso o
+  normal é 30 — pedido do usuário para ter margem para acelerar; vale para toda a animação, atrasos incluídos).
+  O usuário também usa os templates à mão: a pasta `mogrt/` pode estar adicionada em Gráficos essenciais
+  (Procurar > pastas adicionais), então mantenha os nomes dos arquivos.
 - `motion/` — projeto Remotion (React) que renderiza `.mov` ProRes 4444 com alfa e motion blur real
   (`scripts/render-motion.ps1`). Use quando o MOGRT não dá conta (ex.: roleta de verdade, com os dígitos girando em
   coluna) ou quando o usuário pedir vídeo. `scripts/render.ps1` (ffmpeg drawtext) é o motor antigo, só de reserva.
@@ -86,7 +89,8 @@ configuração de segurança). Confira renderizando: `aerender.exe -project <có
 Depois, para os clipes que já estão na timeline ganharem a versão nova (campo novo, animação ajustada):
 `var ARGS={trackIndex:4, mogrtDir:"<$SK>/mogrt"}; $.evalFile("<$SK>/scripts/update_mogrts.jsx");` — troca cada
 MOGRT da trilha pelo template de mesmo nome mantendo início/fim, todos os campos e Posição/Escala do Movimento
-(avisa se havia keyframes). Os templates novos entraram com o campo novo direto (o Premiere não usou cache).
+(avisa se havia keyframes). Os templates novos entraram com o campo novo direto (o Premiere não usou cache). Se o
+significado de um campo mudou, converta: `scale:{"Velocidade":0.3}` (2026-10-30: normal passou de 100 para 30).
 
 ## Remotion (vídeo .mov)
 `& "$SK\scripts\render-motion.ps1" -Spec spec.json -OutDir "<pasta do projeto>\animacoes"` (instala/atualiza o
