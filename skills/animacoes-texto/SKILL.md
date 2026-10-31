@@ -39,6 +39,10 @@ timeline cortado em `dur`, para o usuário poder puxar a ponta e estender. Passe
   para ≥ 1000 prefira `"R$ 1,5 MIL"`/sem contagem (a contagem não põe ponto de milhar).
 Varie: não repita a mesma animação em menções seguidas da mesma categoria, a não ser que o usuário peça consistência.
 Animação por linha: `"anim"` no item vale para todas as linhas; uma linha pode ter `"anim"` próprio.
+Faixa de valores ("R$ 400 a R$ 600"): número de cima grande e `"A R$ 600"` menor embaixo com `"delay"` (s) = quando o
+segundo valor é falado, para ele entrar junto com a fala (sem `delay` as linhas entram com 0,1 s de diferença).
+Som: quando o usuário pedir, ponha `efeitoDinheiro.mp3` (`C:\Edições\efeitoDinheiro.mp3`) numa trilha de áudio vazia
+(A2) no `start` de cada animação de dinheiro.
 
 ## Passo a passo
 1. Transcrição (`words.csv`) e `dump.json` da timeline (skill `legendas-entrevista`, passos 2–3).
@@ -71,7 +75,28 @@ O usuário costuma ajustar à mão a posição das animações. Antes de substit
 atual** do clipe antigo (não o `start` do spec). Renderize com nome novo (`_v2`), coloque nesse início e, se o
 antigo for maior que o novo, remova a sobra que ficar depois (`clip.remove(false,false)`).
 
+## Painel editável no Premiere (MOGRT "Dinheiro")
+Quando o usuário quiser editar texto/fonte/cor/tamanho no painel Propriedades do Premiere em vez de um .mov:
+1. `AfterFX.exe -r scripts\mogrt_dinheiro.jsx` monta a comp com os controles (Valor, Rótulo, Cor do valor, Cor do
+   rótulo, Tamanho, Espaçamento, Brilho, Velocidade, Animação, Atraso do rótulo) e salva `Dinheiro.aep` ao lado.
+2. **Passo manual no After Effects (não existe por script):** em Gráficos essenciais, "Editar propriedades" de Valor e
+   Rótulo → ativar fonte personalizada, tamanho da fonte e estilos falsos; Tamanho com máximo 300. Salvar.
+3. Exportar o .mogrt (`comp.exportAsMotionGraphicsTemplate`; o caminho vira uma PASTA com o .mogrt dentro) e rodar
+   `python scripts\mogrt_ajustar.py <mogrt>` (ordem dos controles e capsuleID novo).
+4. `place_mogrt.jsx` troca cada `dinheiro_NN.mov` da trilha pelo template, mantendo início/fim e a Posição/Escala
+   que o usuário ajustou (soma `(movY - H/2) * escala` na posição, porque o .mov tinha o texto em y=1050).
+
 ## Lições aprendidas
+- **Fonte/tamanho editáveis num MOGRT só pelo After Effects**: o Premiere ignora `fonteditinfo` do definition.json e
+  também os blocos `CFEd/CSEd` e o JSON `capPropFont*` do .aep quando editados por fora (testado com template da
+  Mister Horse: continuou `false`). Faixa dos sliders (mín/máx) também vem do AE: valor fora dela é cortado (120 → 100).
+- **`importMGT` cria um item no projeto que continua lá (escondido da busca por nome) mesmo depois de remover o clipe**,
+  apontando para `Motion Graphics Template Media\<capsuleID>\`. Apagar essas pastas de cache gera "Link Media" ao
+  reabrir o projeto. Teste MOGRT num projeto/sequência de teste, ou não apague o cache.
+- `setPropertyParameters` no Dropdown Control recria o efeito e apaga o nome: renomeie depois, senão as expressões
+  que usam `effect("Animação")` quebram e o AE abre um diálogo de erro que trava o `-r`.
+- `AfterFX.exe -r script.jsx` com projeto aberto e modificado: `app.newProject()` abre "Salvar como" e trava; feche o
+  projeto antes com `app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES)`. Log do script: reabra o arquivo a cada linha.
 - PowerShell: um parâmetro tipado `[string]$Spec` e a variável `$spec` são a mesma — atribuir um objeto o converte em texto.
   `"$color:alpha"` é lido como variável com escopo: use `${color}`.
 - Prévia de vídeo com alfa: use `trim=start=` no filtro, não `-ss` no input (dessincroniza com o fundo).

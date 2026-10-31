@@ -55,7 +55,8 @@ foreach ($it in $cfg.items) {
     if ($fontName -match 'longreach' -and ([string]$ln.text + [string]$ln.count.prefix + [string]$ln.count.to) -match '[45]') {
       $report += "  aviso: '$($ln.text)' tem 4/5 (rabisco na DK Longreach) -> $DigitFallback"; $fontName = $DigitFallback }
     $font = FfPath (Resolve-Font $fontName)
-    $delay = 0.1 * $li
+    # "delay" (s) per line: show a second value only when it is spoken (e.g. "R$ 400" / "A R$ 600")
+    $delay = if ($null -ne $ln.delay) { [double]$ln.delay } else { 0.1 * $li }
     $anim = if ($ln.anim) { [string]$ln.anim } else { [string]$it.anim }
     $e = Anim $anim $S $Yc
     $T = "(t-$delay)"
@@ -81,7 +82,7 @@ foreach ($it in $cfg.items) {
 # preview: 4 moments of every item over a neutral background (check sizes, overlaps, legibility)
 $tiles = @(); $n = 0
 foreach ($it in $cfg.items) {
-  foreach ($tt in 0.08, 0.2, 0.45, ([double]$it.dur * 0.6)) {
+  foreach ($tt in 0.08, 0.2, 0.45, ([double]$it.dur - 0.05)) {
     $p = Join-Path "$OutDir\txt" "p$n.png"
     & $ff -v error -y -f lavfi -i "color=c=0x556070:s=${W}x${H}" -i (Join-Path $OutDir "$($it.id).mov") -filter_complex "[1]trim=start=$(Fmt $tt),setpts=PTS-STARTPTS[o];[0][o]overlay=format=auto,scale=270:480,drawtext=fontfile='C\:/Windows/Fonts/arialbd.ttf':text='$($it.id) $(Fmt $tt 'F2')s':fontsize=16:fontcolor=yellow:x=4:y=4" -frames:v 1 $p
     $tiles += $p; $n++
