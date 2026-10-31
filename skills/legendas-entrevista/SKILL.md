@@ -57,7 +57,9 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
 1. Ache os arquivos: SRT final do usuário, SRT cru do Premiere, `<nome> - corrigida.srt` do agente e a pasta
    `legendas-trabalho\<nome>\` (tem `words.csv` e `dump.json` da época). Sem `words.csv`, transcreva (passos 2–3).
 2. **Ele costuma mexer nos cortes depois de exportar.** Tire um dump da timeline atual (`dump-agora.json`, passo 2)
-   e passe os dois, senão as comparações de tempo saem erradas.
+   e passe os dois, senão as comparações de tempo saem erradas. Para levar um SRT (ou o `spec.json` das animações)
+   da timeline antiga para a atual: `node "$SK\remap.mjs" dump.json dump-agora.json <entrada.srt|.json> <saída>`
+   (casa pela mídia original pelo nome do arquivo, porque ele também move as pastas; lista o que saiu da edição).
 3. `node "$SK\aprender.mjs" --final <final.srt> --premiere <premiere.srt> --agente <corrigida.srt> --words words.csv --dump dump.json --dump-agora dump-agora.json --out <legendas-trabalho\<nome>\aprendizado>`
    → `relatorio.md` (tamanho, divisão, pontuação, números, trocas de texto, tempo) e `lado-a-lado.txt`
    (cada legenda dele × a do Premiere e a do agente). Leia os dois.
