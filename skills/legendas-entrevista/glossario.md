@@ -35,6 +35,20 @@ Acrescente aqui todo nome/termo novo que aparecer quando aprender com uma legend
   `umas férias` ← "uma série" · `Tenho metalúrgica` ← "tem um metalúrgico" (Premiere) / "São metalúrgicos" (Whisper) ·
   `equipamentos` ← "que os" · `Faturo` ← "faturou" · `mantia` (como falado) ← "mantinha".
 
+## Comércio / lojas do Brás (Perrengues do Brás — vídeos 25 a 33, 2026)
+Entrevistas de rua rápidas ("qual fornecedor você me recomenda aqui no Brás?", "qual o valor mínimo e máximo?").
+Nomes conferidos na internet (Instagram/sites das lojas); ainda não confirmados pelo usuário.
+- `aqui no Brás` ← "aqui no braço" (Premiere e Whisper, sempre na voz do entrevistador) / "aqui no Brasil".
+- Lojas e lugares: `Paraíso do Bebê` (enxoval; nunca dividir) · `23 Graus` (jeans, Av. Vautier) · `Silk Store`
+  (T-shirts) ← "Silk Story" (Whisper) · `Busca Busca` ← "busca | busca" · `Shopping Canindé` · `Fusion` (moda
+  masculina) · `Calier` (alfaiataria) ← o Premiere pulou, Whisper "A Calier"/"A Calheta" · `Rua Oriente` ← "O Oriente" ·
+  `Rua Miller` · `Galeria da Moda Oriente` · `Brás`.
+- Termos: `T-shirts e ribana` ← "XXX e" (Premiere) · `meinha` ← "a parte de mim" · `alfaiataria` ← "alfa e ataria"
+  (Whisper) · `oportunidade` ← "fortuna" · `poá` · `plus size` · `modinha` · `atacado e varejo` · `bijuteria`, `joias`.
+- Dinheiro falado com "reais" → `R$80`, `R$200`, `R$9` (o Premiere escreve `80 R$`); sem "reais" fica o número (`No máximo 80`).
+- Dúvida aberta: loja de jeans antes de "Pimenta" (vídeo 25/26) — Whisper ouviu "Açaí e Pimenta"/"Açúcar e Pimenta",
+  Premiere só "Pimenta"; não achei a loja na internet.
+
 ## Cidadania italiana / rua (GUALDEZI)
 - `Episcopal` ← "Piscopal" · `nomeado bispo` ← "Iado Dispo"/"Depois do" · `aposentado` ← "apresentado" ·
   `passaporte` ← "passaporto" · `muito dinheiro` ← "mandinga" · `68 anos` ← "Meia Oito" · `brasilianas`,

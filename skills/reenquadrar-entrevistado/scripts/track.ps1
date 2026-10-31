@@ -46,19 +46,20 @@ public static class FaceTrack {
 "@
 $j = Read-Job $Job; $ff = Get-FFmpeg
 New-Item -ItemType Directory -Force "$OutDir\frames" | Out-Null
-$q = [double]$j.srcW / [FaceTrack]::W   # source px per tracking px
+# source px per tracking px and face offset are per clip (per-clip srcW / faceOffset: mixed 4K and 1080p videos)
 $res = @()
 foreach ($c in $j.clips) {
   # start sampling at an offset so the reference sample (refIdx) falls exactly on the measured mid frame (in + dur/2)
+  $q = (Get-WH $c $j)[0] / [FaceTrack]::W; $fo = if ($null -ne $c.faceOffset) { [double]$c.faceOffset } else { [double]$j.faceOffset }
   $dur = [double]$c.dur; $ci = [int]$c.index; $off = $dur / 2 - [math]::Floor($dur / 2 * 10) / 10; $in = [double]$c.in + $off
   $raw = "$OutDir\frames\c$ci.gray"
   # per-clip "media" overrides the job's (several takes/files on the same track)
   $media = Get-Src $c $j
   & $ff -v error -y -ss (Fmt $in) -t (Fmt ($dur + 0.05)) -i $media -vf "fps=10,scale=$([FaceTrack]::W):$([FaceTrack]::H),format=gray" -f rawvideo $raw
   $refIdx = [int][math]::Floor($dur / 2 * 10)
-  $str = [FaceTrack]::Run($raw, $refIdx, [int]([double]$c.faceX / $q), [int](([double]$c.headY + [double]$j.faceOffset) / $q))
+  $str = [FaceTrack]::Run($raw, $refIdx, [int]([double]$c.faceX / $q), [int](([double]$c.headY + $fo) / $q))
   $pts = @(); $k = 0
-  foreach ($p in ($str.TrimEnd(';') -split ';')) { $v = $p -split ','; $pts += '[{0},{1},{2},{3}]' -f (Fmt ($in + $k * 0.1)), ($q * [double]$v[0]), ($q * [double]$v[1] - [double]$j.faceOffset), $v[2]; $k++ }
+  foreach ($p in ($str.TrimEnd(';') -split ';')) { $v = $p -split ','; $pts += '[{0},{1},{2},{3}]' -f (Fmt ($in + $k * 0.1)), ($q * [double]$v[0]), ($q * [double]$v[1] - $fo), $v[2]; $k++ }
   $res += '[' + ($pts -join ',') + ']'
   $scores = $str.TrimEnd(';') -split ';' | ForEach-Object { [double]::Parse(($_ -split ',')[2], $script:Inv) }
   '{0,2}: {1,2} frames  minScore {2:F2}{3}' -f $ci, $k, ($scores | Measure-Object -Minimum).Minimum, $(if (($scores | Measure-Object -Minimum).Minimum -lt 0.4) { '  <- conferir' } else { '' })

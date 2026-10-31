@@ -1,7 +1,7 @@
 param([string]$Job, [string]$OutDir, [int[]]$Clips, [string]$Out, [double]$Step = 0, [int]$RX = 432, [int]$RY = 216, [int]$RW = 1296, [int]$RH = 1296)
 # Like verify.ps1 but shows only the head region of the OUTPUT frame (x RX..RX+RW, y RY..RY+RH) at 1:3,
 # guides in cyan, faint grid every 108 output px (so offsets can be read: 1 cell = 108 px).
-. "C:\Users\Gustavo\.claude\skills\reenquadrar-entrevistado\scripts\common.ps1"
+. "$PSScriptRoot\common.ps1"
 $j = Read-Job $Job; $ff = Get-FFmpeg
 $raw = [IO.File]::ReadAllText("$OutDir\keys.json")
 $clipStr = $raw.Trim().TrimStart('[').TrimEnd(']') -split '\]\],\[\['
@@ -16,11 +16,12 @@ $files = @(); $n = 0
 $gox = ((108 - ($RX % 108)) % 108) / 3; $goy = ((108 - ($RY % 108)) % 108) / 3
 foreach ($ci in $Clips) {
   $keys = $allKeys[$ci]; $T = $keys[$keys.Count - 1][0]; $cc = $j.clips[$ci]; $cin = [double]$cc.in
-  $gx = [int](([int]$cc.guideX - $RX) / 3) - 1; $gy = [int](([int]$cc.guideY - $RY) / 3) - 1
+  $GXc = if ($null -ne $cc.guideX) { [int]$cc.guideX } else { [int]$j.guideX }; $GYc = if ($null -ne $cc.guideY) { [int]$cc.guideY } else { [int]$j.guideY }
+  $gx = [int](($GXc - $RX) / 3) - 1; $gy = [int](($GYc - $RY) / 3) - 1
   $times = if ($Step -gt 0) { $tl = @(); for ($q = 0.05; $q -lt $T; $q += $Step) { $tl += $q }; $tl + ($T - 0.05) } else { @(0.05, ($T / 2), ($T - 0.05)) }
   foreach ($tt in $times) {
     $v = Interp $keys $tt; $s = $v[0] / 100.0
-    $sw = [int][math]::Round($j.srcW * $s); $sh = [int][math]::Round($j.srcH * $s)
+    $sw = [int][math]::Round((Get-WH $cc $j)[0] * $s); $sh = [int][math]::Round((Get-WH $cc $j)[1] * $s)
     $cx = [int][math]::Round($sw / 2 - $v[1] * $seqW); $cy = [int][math]::Round($sh / 2 - $v[2] * $seqH)
     $lab = "c$ci t$(Fmt $tt 'F1') e$([int]$v[0])"
     $f = Join-Path $tmp "h$n.png"

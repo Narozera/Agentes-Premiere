@@ -15,15 +15,17 @@ $items = @()
 if ($Clips) { foreach ($ci in $Clips) { $c = $j.clips[$ci]; $items += ,@(([double]$c.in + [double]$c.dur / 2), "clip $ci", (Get-Src $c $j)) } }
 # -Times use the media of clip -TimesClip (if given) or the job's
 if ($Times) { $tm = if ($TimesClip -ge 0) { Get-Src $j.clips[$TimesClip] $j } else { Get-Src $null $j }; foreach ($t in $Times) { $items += ,@($t, "t $(Fmt $t 'F2')", $tm) } }
-$sc = 4.0; $tw = [int]($j.srcW / $sc); $th = [int]($j.srcH / $sc)
+# per-clip source size (mixed resolutions): the sheet uses the size of its first clip; 1 tile = 540 px wide
+$c0 = if ($Clips) { $j.clips[$Clips[0]] } elseif ($TimesClip -ge 0) { $j.clips[$TimesClip] } else { $null }; $wh = Get-WH $c0 $j
+$sc = $wh[0] / 540.0; $tw = [int]($wh[0] / $sc); $th = [int]($wh[1] / $sc)
 $font = 'fontfile=C\\:/Windows/Fonts/arialbd.ttf'
 $labels = @()
-for ($x = 432; $x -lt $j.srcW; $x += 432) { $labels += "drawtext=$font`:text='$x':fontsize=14:fontcolor=white:borderw=2:x=$([int]($x/$sc)+2):y=$($th-18)" }
-for ($y = 384; $y -lt $j.srcH; $y += 384) { $labels += "drawtext=$font`:text='$y':fontsize=14:fontcolor=white:borderw=2:x=2:y=$([int]($y/$sc)+2)" }
+for ($x = 432; $x -lt $wh[0]; $x += 432) { $labels += "drawtext=$font`:text='$x':fontsize=14:fontcolor=white:borderw=2:x=$([int]($x/$sc)+2):y=$($th-18)" }
+for ($y = 384; $y -lt $wh[1]; $y += 384) { $labels += "drawtext=$font`:text='$y':fontsize=14:fontcolor=white:borderw=2:x=2:y=$([int]($y/$sc)+2)" }
 $files = @(); $n = 0
 foreach ($it in $items) {
   $f = Join-Path $tmp "m$n.png"
-  $vf = "scale=${tw}:${th},drawgrid=w=27:h=27:t=1:c=cyan@0.35,drawgrid=w=108:h=96:t=2:c=red@0.7," + ($labels -join ',') + ",drawtext=$font`:text='$($it[1])':fontsize=26:fontcolor=yellow:borderw=3:x=8:y=8"
+  $vf = "scale=${tw}:${th},drawgrid=w=$(108/$sc):h=$(108/$sc):t=1:c=cyan@0.35,drawgrid=w=$(432/$sc):h=$(384/$sc):t=2:c=red@0.7," + ($labels -join ',') + ",drawtext=$font`:text='$($it[1])':fontsize=26:fontcolor=yellow:borderw=3:x=8:y=8"
   & $ff -v error -y -ss (Fmt $it[0]) -i $it[2] -frames:v 1 -vf $vf $f
   $files += $f; $n++
 }

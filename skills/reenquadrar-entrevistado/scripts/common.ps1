@@ -33,3 +33,11 @@ function Get-Src($c, $j) {
   $p = if ($c -and $c.proxy) { $c.proxy } elseif (-not ($c -and $c.media)) { $j.proxy } else { $null }
   if ($p -and -not $j.noProxy -and (Test-Path -LiteralPath $p)) { $p } else { $m }
 }
+
+function Get-WH($c, $j) {
+  # Source size of clip $c: per-clip "srcW"/"srcH" (several videos with different resolutions on one track, e.g.
+  # iPhone 4K and 1080p in the same sequence) or the job's.
+  $w = if ($c -and $c.srcW) { [double]$c.srcW } else { [double]$j.srcW }
+  $h = if ($c -and $c.srcH) { [double]$c.srcH } else { [double]$j.srcH }
+  ,@($w, $h)
+}

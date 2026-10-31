@@ -119,3 +119,14 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
 - A regra do `captions.ps1` "legenda curta entre duas do outro falante segue as vizinhas" pinta de amarelo as
   **respostas de uma palavra** no meio de perguntas (ERIC: `Rosa`, `7`, `Boa`, `Solteira`, `Interfere`), mesmo com a
   câmera 2 no ar. Em entrevista de perguntas rápidas, confira a cor de toda legenda de 1 palavra.
+- **Whisper large-v3 depois de buraco entre vídeos estica a 1ª frase pelo buraco inteiro** (Perrengues 25-33: a
+  pergunta que começa em 229,6 s saiu espalhada de 213,7 a 233 s; a de 65,3 s, de 58 a 69 s) e inventa frase repetida
+  no buraco. Isso faz o `captions.ps1` errar a cor e o tempo das primeiras legendas. Corte do `edit.wav` só o começo
+  de cada bloco (≈ 8–12 s) e transcreva com `-mc 0`; troque essas palavras no `words.csv` (guarde `words-orig.csv`).
+- **Palavra que o Whisper escreve diferente do `texto.txt` não alinha** (ex.: "Braço" × `Brás`) e o tempo dela sai
+  por proporção — aí o `captions.ps1` dividiu `aqui no | Brás` num corte errado. Antes de rodar, troque no `words.csv`
+  os erros fixos do Whisper pela forma do `texto.txt` (Braço→Brás, Story→Store).
+- Em pergunta-resposta muito rápida (respostas de 1–2 palavras, cortes a cada 0,5–1 s), mesmo assim ~20 legendas
+  saíram com cor/tempo trocados perto dos cortes. Sempre rode uma checagem final: para cada legenda, a câmera no meio
+  dela (`dump.cam`) tem que bater com a cor, nenhuma pode atravessar `dump.cuts`, fim > início, sem sobreposição; e
+  corrija à mão com as palavras do Whisper (o Premiere marca a última palavra da pergunta 0,2–0,5 s tarde).

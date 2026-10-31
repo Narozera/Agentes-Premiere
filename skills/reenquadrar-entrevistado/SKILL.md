@@ -156,3 +156,24 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
   keys.json e compare as strings de keys antigas×novas (devem ser idênticas). Aplique com `scripts/apply_checked.jsx`
   (`ARGS={trackIndex, n, keysPath, only, exp:{"i":[in,dur]}}`): ele confere nº de clipes e in/duração de cada clipe do
   lote antes de chamar o apply_keys.
+- **Resoluções misturadas na mesma trilha** (2026-10-30, "25 + ... + 33": iPhone 4K 2160×3840 e iPhone 1080×1920, proxies
+  540×960 e 404×720): ponha `"srcW"/"srcH"` e `"faceOffset"` (150 no 4K, 75 no 1080) POR CLIPE no job — todos os scripts
+  agora leem por clipe (`Get-WH` em common.ps1). Confira com ffprobe (vem "1920,1080,-90" = 1080×1920 em pé). O
+  measure_sheet usa o tamanho do 1º clipe da folha: não misture 4K e 1080 na mesma folha.
+- **Fonte 1080×1920 em escala 100 numa sequência 1080×1920 não tem margem nenhuma**: qualquer posição diferente do centro
+  dá borda preta, então "só posição mantendo a escala" é impossível. Feito: subir só o mínimo (keys.ps1) com
+  `"maxZoom"` = escala da referência do grupo (nunca passar da referência; onde o mínimo passaria, a posição fica presa
+  na borda e o rosto sai um pouco da régua). Relate a escala nova de cada clipe. Grupo em que o usuário pôs escala/posição
+  à mão de propósito (ex.: 63 com posição manual): `"maxZoom"` = escala atual — mantém a escala e só segue o rosto até a borda.
+- **Medição precisa e rápida**: `scripts/xcrop.ps1 -Items "clip:t:x:y;..." -Half 600` (t=-1 = meio do clipe) recorta em
+  volta da estimativa com janela proporcional à largura da fonte (mesma área do corpo em 4K e 1080) e desenha a cruz
+  amarela; leia o desvio em relação à cruz (grade a cada 54 px do tile). Comece com a folha grosseira, depois 1 rodada de
+  xcrop: deu ±15 px de saída na maioria. Janela pequena demais (-Half 270) não mostra o rosto inteiro.
+- **Perfil/3/4**: use sempre a mesma convenção no clipe de referência e nos outros (ex.: média entre centro do rosto e
+  centro da cabeça nariz↔nuca). A leitura a olho variou ~40 px (fonte) entre duas folhas no mesmo quadro (clipe 19):
+  se a verificação mostra um clipe inteiro deslocado igual e o resto do grupo certo, some o desvio em x no track.json
+  daquele clipe (sem rastrear de novo) em vez de `manual`.
+- **Cutaway do apresentador dentro do arquivo do iPhone** (o apresentador falando para a câmera, mesmo arquivo, logo
+  depois das respostas): não é o entrevistado — não aplique; relate (o keys.json já fica pronto se pedirem).
+- `apply_checked.jsx` com `exp` grande: grave o objeto num arquivo e leia no ExtendScript com
+  `eval("(" + f.read() + ")")` em vez de colar na chamada.

@@ -24,7 +24,7 @@ foreach ($ci in $Clips) {
   $times = if ($Step -gt 0) { $tl = @(); for ($q = 0.05; $q -lt $T; $q += $Step) { $tl += $q }; $tl + ($T - 0.05) } else { @(0.05, ($T / 2), ($T - 0.05)) }
   foreach ($tt in $times) {
     $v = Interp $keys $tt; $s = $v[0] / 100.0
-    $scaledW = [int][math]::Round($j.srcW * $s); $scaledH = [int][math]::Round($j.srcH * $s)
+    $scaledW = [int][math]::Round((Get-WH $cc $j)[0] * $s); $scaledH = [int][math]::Round((Get-WH $cc $j)[1] * $s)
     $cx = [int][math]::Round($scaledW / 2 - $v[1] * $seqW); $cy = [int][math]::Round($scaledH / 2 - $v[2] * $seqH)
     $lab = "clip $ci  t $(Fmt $tt 'F1')s  esc $([int]$v[0])"
     $f = Join-Path $tmp "v$n.png"

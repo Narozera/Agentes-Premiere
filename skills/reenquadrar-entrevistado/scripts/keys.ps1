@@ -31,6 +31,7 @@ foreach ($c in $j.clips) {
   # track.json/keys.json/apply_keys are positional: the job must list EVERY clip of the track, in order (index = position)
   if ([int]$c.index -ne $pi) { throw "job.clips[$pi] has index $($c.index): list every clip of the track in order" }; $pi++
   # per-clip guides (several videos with different references on one timeline)
+  $wh = Get-WH $c $j; $SW = $wh[0]; $SH = $wh[1]
   $GX = if ($null -ne $c.guideX) { [double]$c.guideX } else { [double]$j.guideX }; $GY = if ($null -ne $c.guideY) { [double]$c.guideY } else { [double]$j.guideY }
   # speed-changed clip: in/dur in the job are REAL media seconds; Premiere key offsets are timeline seconds = media offset / speed
   $spd = if ($c.speed) { [double]$c.speed } else { 1.0 }

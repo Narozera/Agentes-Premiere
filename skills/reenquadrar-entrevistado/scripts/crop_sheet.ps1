@@ -1,12 +1,12 @@
 param([string]$Job, [int[]]$Clips, [string]$Out, [int]$X0 = 324, [int]$Y0 = 648, [int]$CW = 1512, [int]$CH = 1188, [double[]]$Times, [int]$TimesClip = -1, [string]$Marks = '')
 # Crop of the head region at 1:2 (1 tile px = 2 source px), grid every 108 source px, labels every 216.
 # -Marks "x,y;x,y;..." draws a yellow cross per item (source px) to check an estimate.
-. "C:\Users\Gustavo\.claude\skills\reenquadrar-entrevistado\scripts\common.ps1"
+. "$PSScriptRoot\common.ps1"
 $j = Read-Job $Job; $ff = Get-FFmpeg
 $tmp = Join-Path ([IO.Path]::GetDirectoryName($Out)) 'crop_tmp'; New-Item -ItemType Directory -Force $tmp | Out-Null
 $items = @()
-if ($Clips) { foreach ($ci in $Clips) { $c = $j.clips[$ci]; $items += ,@(([double]$c.in + [double]$c.dur / 2), "clip $ci", (Get-Src $c $j)) } }
-if ($Times) { $m = Get-Src $j.clips[$TimesClip] $j; foreach ($t in $Times) { $items += ,@($t, "c$TimesClip t $(Fmt $t 'F2')", $m) } }
+if ($Clips) { foreach ($ci in $Clips) { $c = $j.clips[$ci]; $items += ,@(([double]$c.in + [double]$c.dur / 2), "clip $ci", (Get-Src $c $j), (Get-WH $c $j)) } }
+if ($Times) { $m = Get-Src $j.clips[$TimesClip] $j; foreach ($t in $Times) { $items += ,@($t, "c$TimesClip t $(Fmt $t 'F2')", $m, (Get-WH $j.clips[$TimesClip] $j)) } }
 $mk = if ($Marks) { $Marks -split ';' } else { @() }
 $tw = $CW / 2; $th = $CH / 2
 $font = 'fontfile=C\\:/Windows/Fonts/arialbd.ttf'
@@ -17,7 +17,7 @@ $gx = ((108 - ($X0 % 108)) % 108) / 2; $gy = ((108 - ($Y0 % 108)) % 108) / 2
 $files = @(); $n = 0
 foreach ($it in $items) {
   $f = Join-Path $tmp "c$n.png"
-  $vf = "scale=$($j.srcW):$($j.srcH),crop=${CW}:${CH}:${X0}:${Y0},scale=${tw}:${th},drawgrid=x=${gx}:y=${gy}:w=54:h=54:t=1:c=red@0.6," + ($lab -join ',')
+  $vf = "scale=$($it[3][0]):$($it[3][1]),crop=${CW}:${CH}:${X0}:${Y0},scale=${tw}:${th},drawgrid=x=${gx}:y=${gy}:w=54:h=54:t=1:c=red@0.6," + ($lab -join ',')
   if ($n -lt $mk.Count -and $mk[$n]) { $p = $mk[$n] -split ','; $mx = [int](([double]$p[0] - $X0) / 2); $my = [int](([double]$p[1] - $Y0) / 2)
     $vf += ",drawbox=x=$($mx-1):y=$($my-25):w=3:h=50:c=yellow:t=fill,drawbox=x=$($mx-25):y=$($my-1):w=50:h=3:c=yellow:t=fill" }
   $vf += ",drawtext=$font`:text='$($it[1])':fontsize=24:fontcolor=yellow:borderw=3:x=8:y=8"
