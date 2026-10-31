@@ -177,3 +177,14 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
   depois das respostas): não é o entrevistado — não aplique; relate (o keys.json já fica pronto se pedirem).
 - `apply_checked.jsx` com `exp` grande: grave o objeto num arquivo e leia no ExtendScript com
   `eval("(" + f.read() + ")")` em vez de colar na chamada.
+- **Caminho com acento (D:\EDIÇÃO) corrompido no job.json** (2026-10-31): `Get-Content -Raw` no PowerShell 5.1 lê UTF-8
+  sem BOM como ANSI; ao regravar o job os caminhos viram "EDIÃ‡ÃƒO" e o ffmpeg não acha mídia nem proxy. Leia e regrave
+  sempre com `[IO.File]::ReadAllText` / `WriteAllText`. Números do `ConvertFrom-Json` podem vir como decimal:
+  `.ToString('R', inv)` falha — converta para `[double]` antes.
+- **Referência que segue o CENTRO DA CABEÇA** (2026-10-31, VIDEO URGENTE, 6 keys em 0,7 s): no quadro de saída o centro
+  dos óculos oscilou -115..0 px da régua quando a pessoa virava, mas o centro da cabeça (cabelo+coque) ficou fixo em
+  ~1065. Antes de concluir que a referência "não segue o rosto", meça o centro da cabeça. Para as réguas, use a medição
+  da referência com a MESMA convenção (xcrop) que os outros clipes: `saida = pos + (medida - fonte/2) * escala`.
+- **Sony 4K em pé (2160×3840) a 100 numa sequência 4K com referência em 139**: com réguas x=1080, y=700 a escala mínima
+  sem borda deu 111-132 (subir a cabeça até a régua e centralizar exige zoom); `"maxZoom": 139` não chegou a atuar.
+  Medição: folha grosseira (4 por linha) + 1 rodada de `xcrop -Half 600` em todos os clipes bastou (verificação sem correção).

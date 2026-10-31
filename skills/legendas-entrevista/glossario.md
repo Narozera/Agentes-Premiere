@@ -49,6 +49,17 @@ Nomes conferidos na internet (Instagram/sites das lojas); ainda não confirmados
 - Dúvida aberta: loja de jeans antes de "Pimenta" (vídeo 25/26) — Whisper ouviu "Açaí e Pimenta"/"Açúcar e Pimenta",
   Premiere só "Pimenta"; não achei a loja na internet.
 
+## Relacionamento / rua — ERIC (parque; "3 IBIRA", "DA AUTO SAPATOS", "VIDEO URGENTE", 2026)
+Entrevistas de rua com mulheres sobre homem baixo/alto; termina com o entrevistador vendendo o tênis que deixa 7 cm
+mais alto. Câmera 1 = plano aberto dos dois (pinte pelo falante), câmera 2 = close dela.
+- Marca: `Da Auto` (sapatos) ← "auto" (Premiere) / "alta" (Whisper, mesmo com prompt). No VIDEO URGENTE ficou
+  `com a Auto né` (ninguém ouviu o "Da") — confirmar com o usuário se é `com a Da Auto`.
+- Fecho: `comenta alto aqui embaixo que eu te mando o link no direct` (no DA AUTO o agente escreveu `Comenta ALTO`, a
+  palavra-chave; maiúscula é com o usuário).
+- Erros de audição: `Ele te deixa` ← "Elisha" · `Meu já age sabe` ← "meu jardim | sabe" · `pra minhas amigas` ←
+  "priminhas amigas" · `red flag` ← sumido (Premiere) · `já dá pra passar` ← "já tá pra passar" · `Aí ó tá vendo`
+  ← "Aí já" · `7 centímetros` ← "sete".
+
 ## Cidadania italiana / rua (GUALDEZI)
 - `Episcopal` ← "Piscopal" · `nomeado bispo` ← "Iado Dispo"/"Depois do" · `aposentado` ← "apresentado" ·
   `passaporte` ← "passaporto" · `muito dinheiro` ← "mandinga" · `68 anos` ← "Meia Oito" · `brasilianas`,

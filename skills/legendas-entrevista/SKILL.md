@@ -132,3 +132,14 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
   saíram com cor/tempo trocados perto dos cortes. Sempre rode uma checagem final: para cada legenda, a câmera no meio
   dela (`dump.cam`) tem que bater com a cor, nenhuma pode atravessar `dump.cuts`, fim > início, sem sobreposição; e
   corrija à mão com as palavras do Whisper (o Premiere marca a última palavra da pergunta 0,2–0,5 s tarde).
+- **`overlay` pode ser a própria câmera** (ERIC "VIDEO URGENTE": V3 tinha uma cópia do clipe da câmera 1, mesma mídia e
+  mesmo `in` do V1 — punch-in no tênis). O `dump_timeline.jsx` pôs isso em `overlay` e o `captions.ps1` teria tirado as
+  legendas de baixo. Se a mídia do overlay for de câmera (MP4 da entrevista, não gráfico/MOGRT/animação), tire do
+  `overlay` (guarde `dump-orig.json`) e avise. O usuário também pode dizer "V3 vazia" sem ser.
+- **Palavra de um lado ou do outro de um jump cut**: o Whisper do arquivo inteiro erra (ERIC: pôs `Não só` 0,4 s antes
+  do corte e `no seu` antes de outro; os dois eram depois). Transcrever **cada clipe do áudio sozinho**
+  (`ffmpeg -ss <start> -to <end>` do `dump.audio`, `whisper-cli -mc 0 -nt`) mostra exatamente que palavras ficam em
+  cada clipe. Use nos cortes onde Premiere e Whisper discordam e divida a linha no corte (`mesmo de | honrar`).
+- **Quem fala, com câmera 1 em plano aberto**: altura da voz (f0 mediana por trecho, autocorrelação em Node sobre o
+  `edit.wav`; sem Python na máquina). ERIC: homem 110–140 Hz, mulher 220–260 Hz — resolveu `Aí ó tá vendo` (dela, na
+  câmera 2) e `Então tá faltando um homem de verdade` (dele). Script: `legendas-trabalho\video-urgente\` (pitch.mjs).
