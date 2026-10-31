@@ -13,8 +13,10 @@ de legendas corrigido, todos em tempo de timeline).
 ## Biblioteca salva (reaproveite — o usuário pediu para tudo ficar guardado)
 - `mogrt/` — **templates editáveis** (padrão). `Dinheiro - Pop/Queda/Impacto/Cascata/Contador/Roleta.mogrt`,
   o projeto-fonte `Dinheiro - animacoes.aep` (o usuário pode abrir no AE) e `build_mogrts.jsx`, que monta tudo.
-  Campos editáveis no Premiere (Controle de efeitos / Gráficos essenciais): **Valor, Rótulo, Cor, Tamanho, Brilho,
-  Velocidade** (**30 = normal**, 60 = 2×, 90 = 3×, 15 = metade; o controle do Premiere vai só até 100, por isso o
+  Campos editáveis no Premiere (Controle de efeitos / Gráficos essenciais), nesta ordem: **Valor e Rótulo** (com
+  troca de fonte, estilo e tamanho de fonte — liberados no `definition.json`), **Cor do valor, Cor do rótulo**,
+  **Tamanho** (0–300), **Espaçamento** (entre as linhas: 50 = normal, cada ponto = 2 px), **Brilho**,
+  **Velocidade** (**30 = normal**, 60 = 2×, 90 = 3×, 15 = metade; o controle do Premiere vai só até 100, por isso o
   normal é 30 — pedido do usuário para ter margem para acelerar; vale para toda a animação, atrasos incluídos).
   O usuário também usa os templates à mão: a pasta `mogrt/` pode estar adicionada em Gráficos essenciais
   (Procurar > pastas adicionais), então mantenha os nomes dos arquivos.
@@ -90,7 +92,9 @@ Depois, para os clipes que já estão na timeline ganharem a versão nova (campo
 `var ARGS={trackIndex:4, mogrtDir:"<$SK>/mogrt"}; $.evalFile("<$SK>/scripts/update_mogrts.jsx");` — troca cada
 MOGRT da trilha pelo template de mesmo nome mantendo início/fim, todos os campos e Posição/Escala do Movimento
 (avisa se havia keyframes). Os templates novos entraram com o campo novo direto (o Premiere não usou cache). Se o
-significado de um campo mudou, converta: `scale:{"Velocidade":0.3}` (2026-10-30: normal passou de 100 para 30).
+significado de um campo mudou, converta: `scale:{"Velocidade":0.3}` (2026-10-30: normal passou de 100 para 30); se
+um campo foi dividido/renomeado, `from:{"Cor do valor":"Cor","Cor do rótulo":"Cor"}`. Os textos são mesclados:
+ficam o texto/fonte do usuário e as opções (capProp*) do template novo.
 
 ## Remotion (vídeo .mov)
 `& "$SK\scripts\render-motion.ps1" -Spec spec.json -OutDir "<pasta do projeto>\animacoes"` (instala/atualiza o
@@ -119,6 +123,10 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   de `motionGraphicsTemplateName`) e **exige o projeto salvo antes de cada export** — senão abre "O projeto precisa
   ser salvo primeiro" e o script trava. Depois do export o objeto da comp fica inválido (`itemByID`). Objetos de
   propriedade/efeito também ficam inválidos ao adicionar irmãos: procure de novo pelo nome.
+- O script do AE não liga "Editar propriedades > fonte" nem muda a faixa dos sliders (0–100). O `.mogrt` é um zip:
+  o `build-mogrts.ps1` edita o `definition.json` (`patch_definition.mjs`: `capPropFont*Edit` = true, `Tamanho` até
+  300). Ordem dos campos no Premiere = inversa da ordem de `addToMotionGraphicsTemplateAs`. Nomes de efeito usados em
+  expressão ficam sem acento (`CorValor`, `Espacamento`); o nome com acento vai só no EGP.
 - Texto que muda a cada quadro (contador, roleta) fica com fantasmas com motion blur: o valor desses templates vai
   sem blur. Velocidade entra no tempo de TODAS as expressões (`t=(time-inPoint)*V/100-atraso`), inclusive na
   semente do embaralhamento.

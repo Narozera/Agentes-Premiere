@@ -5,6 +5,7 @@
 // Usage: var ARGS={trackIndex:4, mogrtDir:"C:/Users/Gustavo/.claude/skills/animacoes-texto/mogrt"};
 //        $.evalFile("<skill>/scripts/update_mogrts.jsx");
 // ARGS.scale = {"Velocidade": 0.3} multiplies a field when its meaning changed between versions (old 100 = new 30).
+// ARGS.from = {"Cor do valor": "Cor"} fills a new field from an old one that was split/renamed.
 (function () {
   var seq = app.project.activeSequence, track = seq.videoTracks[ARGS.trackIndex], TICKS = 254016000000;
   function params(comp) {
@@ -14,6 +15,19 @@
       try { o[n] = (n == "Cor") ? { color: p.getColorValue() } : { v: p.getValue() }; } catch (e) {}
     }
     return o;
+  }
+  // text fields are JSON: keep the NEW template's capabilities (capProp*: font editable...) and the user's text/font
+  function mergeText(nowJson, oldJson) {
+    var n = eval("(" + nowJson + ")"), o = eval("(" + oldJson + ")"), s = [];
+    for (var k in o) if (k.indexOf("capProp") != 0) n[k] = o[k];
+    for (var k in n) s.push('"' + k + '":' + toJ(n[k]));
+    return "{" + s.join(",") + "}";
+  }
+  function toJ(v) {
+    if (v === null) return "null";
+    if (typeof v == "string") return '"' + v.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+    if (v instanceof Array) { var a = []; for (var i = 0; i < v.length; i++) a.push(toJ(v[i])); return "[" + a.join(",") + "]"; }
+    return String(v);
   }
   function motion(clip) {
     for (var i = 0; i < clip.components.numItems; i++) {
@@ -46,10 +60,12 @@
     var comp = nc.getMGTComponent(), fields = [];
     for (var i = 0; i < comp.properties.numItems; i++) {
       var p = comp.properties[i], was = o.p[p.displayName];
+      if (!was && ARGS.from && ARGS.from[p.displayName]) was = o.p[ARGS.from[p.displayName]];
       fields.push(p.displayName);
       if (!was) continue;
       if (was.color) p.setColorValue(was.color[0], was.color[1], was.color[2], was.color[3], true);
       else if (ARGS.scale && ARGS.scale[p.displayName]) p.setValue(was.v * ARGS.scale[p.displayName], true);
+      else if (typeof was.v == "string" && was.v.charAt(0) == "{") p.setValue(mergeText(p.getValue(), was.v), true);
       else p.setValue(was.v, true);
     }
     var m = motion(nc), warn = "";

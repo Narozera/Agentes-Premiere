@@ -3,7 +3,8 @@
 // Files and Access Network"). Log: %TEMP%\build_mogrts.log. ARGS (optional, set before $.evalFile):
 //   {style:"dinheiro", out:"<folder>"}   style = key of STYLES below; out = where .mogrt/.aep go (default: this folder)
 // Each template: 1080x1920 60 fps 10 s; layers CONTROLES (null at the caption line y=1138), VALOR, ROTULO.
-// Essential properties (editable in Premiere > Essential Graphics / Effect Controls): Valor, Rotulo, Cor, Tamanho, Brilho,
+// Essential properties (editable in Premiere > Essential Graphics / Effect Controls): Valor, Rotulo, Cor do valor,
+// Cor do rotulo, Tamanho, Espacamento (50 = normal), Brilho,
 // Velocidade (30 = normal, 60 = twice as fast, 15 = half; the slider goes to 100 = 3.3x).
 // The animations are expressions (springs measured from the Remotion presets in ../motion), so Valor can be any text.
 (function () {
@@ -78,9 +79,11 @@
     sp.setValue(td);
     // colour from the CONTROLES null (a text animator recolours the fill only; the black outline stays)
     var anims_ = lay.property("ADBE Text Properties").property("ADBE Text Animators");
+    // each line has its own colour control (the user colours the value and the label differently)
     var an = anims_.addProperty("ADBE Text Animator"); an.name = "Cor";
     an.property("ADBE Text Selectors").addProperty("ADBE Text Selector");
-    an.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color").expression = 'thisComp.layer("CONTROLES").effect("Cor")(1)';
+    an.property("ADBE Text Animator Properties").addProperty("ADBE Text Fill Color").expression =
+      'thisComp.layer("CONTROLES").effect("' + (L == "VALOR" ? "CorValor" : "CorRotulo") + '")(1)';
     // glow (LED look), intensity from Brilho
     var g = lay.property("ADBE Effect Parade").addProperty("ADBE Glo2");
     g.property("ADBE Glo2-0002").setValue(40);   // threshold %
@@ -98,8 +101,11 @@
     comp.motionBlur = true; comp.shutterAngle = 180; comp.shutterPhase = -90;
     var ctl = comp.layers.addNull(); ctl.name = "CONTROLES";
     var fx = ctl.property("ADBE Effect Parade");
-    fx.addProperty("ADBE Color Control").name = "Cor"; fx.property("Cor").property(1).setValue(st.color);
+    // effect names stay ASCII (they go into expressions); the names the user sees are set in the EGP below
+    fx.addProperty("ADBE Color Control").name = "CorValor"; fx.property("CorValor").property(1).setValue(st.color);
+    fx.addProperty("ADBE Color Control").name = "CorRotulo"; fx.property("CorRotulo").property(1).setValue(st.color);
     fx.addProperty("ADBE Slider Control").name = "Tamanho"; fx.property("Tamanho").property(1).setValue(100);
+    fx.addProperty("ADBE Slider Control").name = "Espacamento"; fx.property("Espacamento").property(1).setValue(50);
     fx.addProperty("ADBE Slider Control").name = "Brilho"; fx.property("Brilho").property(1).setValue(50);
     fx.addProperty("ADBE Slider Control").name = "Velocidade"; fx.property("Velocidade").property(1).setValue(SPEED_NORMAL);
     var tr = ctl.property("ADBE Transform Group");
@@ -116,7 +122,9 @@
     var lastExpr = function (code) { var i = Math.max(code.lastIndexOf(";"), code.lastIndexOf("\n")); return [code.substring(0, i + 1), code.substring(i + 1)]; };
     var setL = function (lay, L) {
       var T = lay.property("ADBE Transform Group");
-      var base = lastExpr(L == "VALOR" ? "[0,0]" : "var v=thisComp.layer('VALOR').sourceRectAtTime(" + REF + ",false);var r=sourceRectAtTime(" + REF + ",false);[0,v.height/2+" + GAP + "+r.height/2]");
+      var base = lastExpr(L == "VALOR" ? "[0,0]" : "var v=thisComp.layer('VALOR').sourceRectAtTime(" + REF + ",false);var r=sourceRectAtTime(" + REF + ",false);" +
+        // Espacamento: 50 = normal gap, each step 2 px closer/farther
+        "var g=" + GAP + "+(thisComp.layer('CONTROLES').effect('Espacamento')(1)-50)*2;[0,v.height/2+g+r.height/2]");
       var off = lastExpr(a.pos ? a.pos(L) : "[0,0]");
       T.property("ADBE Position").expression = base[0] + "var b=" + base[1] + ";\n" + off[0] + "add(b," + off[1] + ")";
       if (a.scale) T.property("ADBE Scale").expression = a.scale(L);
@@ -134,15 +142,17 @@
     setL(val, "VALOR"); setL(lab, "ROTULO");
     // digits that change every frame (count/scramble) turn into ghosts with motion blur
     if (name == "contador" || name == "roleta") val.motionBlur = false;
-    // essential properties, in this order in Premiere
-    val.property("ADBE Text Properties").property("ADBE Text Document").addToMotionGraphicsTemplateAs(comp, "Valor");
-    lab.property("ADBE Text Properties").property("ADBE Text Document").addToMotionGraphicsTemplateAs(comp, "R\u00f3tulo");
+    // essential properties: Premiere lists them in REVERSE order of adding, so add from the bottom up
     // (property objects go stale when siblings are added: look the effects up again)
     fx = comp.layer("CONTROLES").property("ADBE Effect Parade");
-    fx.property("Cor").property(1).addToMotionGraphicsTemplateAs(comp, "Cor");
-    fx.property("Tamanho").property(1).addToMotionGraphicsTemplateAs(comp, "Tamanho");
-    fx.property("Brilho").property(1).addToMotionGraphicsTemplateAs(comp, "Brilho");
     fx.property("Velocidade").property(1).addToMotionGraphicsTemplateAs(comp, "Velocidade");
+    fx.property("Brilho").property(1).addToMotionGraphicsTemplateAs(comp, "Brilho");
+    fx.property("Espacamento").property(1).addToMotionGraphicsTemplateAs(comp, "Espa\u00e7amento");
+    fx.property("Tamanho").property(1).addToMotionGraphicsTemplateAs(comp, "Tamanho");
+    fx.property("CorRotulo").property(1).addToMotionGraphicsTemplateAs(comp, "Cor do r\u00f3tulo");
+    fx.property("CorValor").property(1).addToMotionGraphicsTemplateAs(comp, "Cor do valor");
+    comp.layer("ROTULO").property("ADBE Text Properties").property("ADBE Text Document").addToMotionGraphicsTemplateAs(comp, "R\u00f3tulo");
+    comp.layer("VALOR").property("ADBE Text Properties").property("ADBE Text Document").addToMotionGraphicsTemplateAs(comp, "Valor");
     comp.motionGraphicsTemplateName = comp.name;
     // the 2nd argument is the FOLDER; the file is named after motionGraphicsTemplateName. The export invalidates the
     // comp object, so look it up again by id.

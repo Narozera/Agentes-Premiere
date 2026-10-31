@@ -1,4 +1,4 @@
-param([string]$Style = 'dinheiro', [int]$TimeoutSec = 600)
+﻿param([string]$Style = 'dinheiro', [int]$TimeoutSec = 600)
 # Runs build_mogrts.jsx in After Effects and waits for it. While the script runs, AE opens confirmation dialogs on
 # every export ("fonts not synced with Adobe" for Digital-7/DK Longreach, "save the project first?"); their default
 # button (OK / Salvar) is the right answer, so they are confirmed with Enter. Log: %TEMP%\build_mogrts.log
@@ -33,3 +33,21 @@ while (((Get-Date) - $t0).TotalSeconds -lt $TimeoutSec) {
 }
 "avisos confirmados: $n"
 Get-Content $log -Encoding UTF8
+
+# options AE scripting cannot set (font editable, slider ranges): patch definition.json inside each new .mogrt
+Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+$built = Select-String -Path $log -Pattern '^ok\s+(.+\.mogrt)' | ForEach-Object { $_.Matches[0].Groups[1].Value.Trim() }
+foreach ($m in $built) {
+  $zip = [IO.Compression.ZipFile]::Open($m, 'Update')
+  try {
+    # through temp files: PowerShell 5.1 pipes to native programs in ASCII and would break the accents
+    $e = $zip.GetEntry('definition.json'); $tin = Join-Path $env:TEMP 'mogrt_def_in.json'; $tout = Join-Path $env:TEMP 'mogrt_def_out.json'
+    [IO.Compression.ZipFileExtensions]::ExtractToFile($e, $tin, $true)
+    Remove-Item $tout -ErrorAction SilentlyContinue
+    node (Join-Path $PSScriptRoot 'patch_definition.mjs') $tin $tout
+    if (-not (Test-Path $tout)) { throw "patch falhou: $m" }
+    $e.Delete()
+    [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $tout, 'definition.json') | Out-Null
+    "fonte editável + faixas: $([IO.Path]::GetFileName($m))"
+  } finally { $zip.Dispose() }
+}
