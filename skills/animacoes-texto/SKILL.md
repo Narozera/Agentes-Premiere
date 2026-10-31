@@ -13,7 +13,8 @@ de legendas corrigido, todos em tempo de timeline).
 ## Biblioteca salva (reaproveite — o usuário pediu para tudo ficar guardado)
 - `mogrt/` — **templates editáveis** (padrão). `Dinheiro - Pop/Queda/Impacto/Cascata/Contador/Roleta.mogrt`,
   o projeto-fonte `Dinheiro - animacoes.aep` (o usuário pode abrir no AE) e `build_mogrts.jsx`, que monta tudo.
-  Campos editáveis no Premiere (Controle de efeitos / Gráficos essenciais): **Valor, Rótulo, Cor, Tamanho, Brilho**.
+  Campos editáveis no Premiere (Controle de efeitos / Gráficos essenciais): **Valor, Rótulo, Cor, Tamanho, Brilho,
+  Velocidade** (%, 200 = dobro da velocidade, 50 = metade; vale para toda a animação, atrasos incluídos).
 - `motion/` — projeto Remotion (React) que renderiza `.mov` ProRes 4444 com alfa e motion blur real
   (`scripts/render-motion.ps1`). Use quando o MOGRT não dá conta (ex.: roleta de verdade, com os dígitos girando em
   coluna) ou quando o usuário pedir vídeo. `scripts/render.ps1` (ffmpeg drawtext) é o motor antigo, só de reserva.
@@ -39,9 +40,10 @@ render-motion troca a linha para `Montserrat Black`; no MOGRT evite ou use a cat
 ## Posição e tempo (regras do usuário)
 - **Todas as animações ficam na linha da legenda**: o valor centrado em **y = 1138** (meio das letras da legenda
   dele, medido no vídeo 20 exportado) e o rótulo logo abaixo. Os templates já nascem nessa linha.
-- A animação **substitui a legenda**: começa e termina junto com a(s) legenda(s) que têm o valor (início da 1ª,
-  fim da última). Depois gere um SRT sem essas legendas e importe como trilha nova
-  (`legendas ... - com animacoes.srt`, via `legendas-entrevista/scripts/import_srt.jsx`) — o usuário desativa a antiga.
+- O tempo da animação é o da(s) legenda(s) que têm o valor (início da 1ª, fim da última); as legendas servem só
+  de **leitura** para achar fala e tempo.
+- **Nunca crie, altere nem importe legendas** (SRT, trilha de legendas): animações e legendas são agentes
+  separados (pedido do usuário, 2026-10-30). Tirar a legenda de baixo da animação é com ele / com o agente de legendas.
 - Se a legenda tem palavras além do valor ("mínimo R$9", "No máximo 80"), elas viram o rótulo.
 
 ## Animações — escolha a melhor para cada fala e varie (nada de flicker em dinheiro)
@@ -72,16 +74,19 @@ No Remotion (`render-motion.ps1`) os mesmos nomes existem; lá `roleta` gira os 
 4. Coloque e preencha (Valor = linha 1, Rótulo = linha 2; contador/roleta animam o número do próprio Valor):
    `var ARGS={trackIndex:2, items:[{mogrt:"<$SK>/mogrt/Dinheiro - Impacto.mogrt", start:74.62, dur:1.08, valor:"R$ 9", rotulo:"MÍNIMO"}]}; $.evalFile("<$SK>/scripts/place_mogrt.jsx");`
    Confira no retorno que `valor`/`rotulo` voltaram com o texto certo e que início/fim batem.
-5. Gere e importe o SRT sem as legendas substituídas (acima).
-6. Relate: tabela (tempo, fala, texto, animação e por quê), trilha usada, que tudo é editável no Controle de efeitos,
+5. Relate: tabela (tempo, fala, texto, animação e por quê), trilha usada, que tudo é editável no Controle de efeitos,
    que o `spec.json` ficou salvo e que o projeto não foi salvo.
 
 ## Remontar os templates no After Effects
-`& "C:\Program Files\Adobe\Adobe After Effects 2026\Support Files\AfterFX.exe" -r "<$SK>\mogrt\build_mogrts.jsx"`
-→ log em `%TEMP%\build_mogrts.log` (`ok ...` por template, `aep: ...` no fim). O AE precisa de *Preferências >
-Script e Expressões > Permitir que scripts gravem arquivos* (o usuário liga; é configuração de segurança). Confira
-renderizando: `aerender.exe -project <cópia do .aep> -comp "Dinheiro - Pop" -s 0 -e 150 -output x.mp4` e monte uma
-folha com frames 0,1/0,25/0,5/2 s.
+`& "$SK\mogrt\build-mogrts.ps1" [-Style dinheiro]` — roda o `build_mogrts.jsx` no AE, confirma sozinho os avisos de
+cada export (fonte fora do Adobe Fonts, "salvar o projeto?") e mostra o log (`ok ...` por template, `aep: ...` no
+fim). O AE precisa de *Preferências > Script e Expressões > Permitir que scripts gravem arquivos* (o usuário liga; é
+configuração de segurança). Confira renderizando: `aerender.exe -project <cópia do .aep> -comp "Dinheiro - Pop"
+-s 0 -e 150 -output x.mp4` e monte uma folha com frames 0,1/0,25/0,5/2 s.
+Depois, para os clipes que já estão na timeline ganharem a versão nova (campo novo, animação ajustada):
+`var ARGS={trackIndex:4, mogrtDir:"<$SK>/mogrt"}; $.evalFile("<$SK>/scripts/update_mogrts.jsx");` — troca cada
+MOGRT da trilha pelo template de mesmo nome mantendo início/fim, todos os campos e Posição/Escala do Movimento
+(avisa se havia keyframes). Os templates novos entraram com o campo novo direto (o Premiere não usou cache).
 
 ## Remotion (vídeo .mov)
 `& "$SK\scripts\render-motion.ps1" -Spec spec.json -OutDir "<pasta do projeto>\animacoes"` (instala/atualiza o
@@ -98,8 +103,8 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   Premiere em loop (2026-10-30, teve de ser fechado à força). Confira os templates pelo `aerender` e o texto pelo
   retorno do `place_mogrt.jsx`.
 - **O usuário reedita depois das legendas** (reordena blocos, recorta, move a pasta das mídias): antes de colocar,
-  compare o A1 atual com o `dump.json` das legendas; se mudou, gere `dump-agora.json` e converta `spec.json` e o SRT
-  com `legendas-entrevista/scripts/remap.mjs` (casa pela mídia original, pelo NOME do arquivo).
+  compare o A1 atual com o `dump.json` das legendas; se mudou, gere `dump-agora.json` e converta o `spec.json` com
+  `legendas-entrevista/scripts/remap.mjs` (casa pela mídia original, pelo NOME do arquivo). Converta só o spec.
 - Texto de MOGRT do AE no Premiere é um JSON; ao trocar `textEditValue`, ajuste `fontTextRunLength` para o tamanho do
   texto novo (o `place_mogrt.jsx` já faz).
 - V3/V4 costumam ter as imagens do usuário (logos de lojas, produtos): coloque as animações na primeira trilha vazia
@@ -110,6 +115,9 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   de `motionGraphicsTemplateName`) e **exige o projeto salvo antes de cada export** — senão abre "O projeto precisa
   ser salvo primeiro" e o script trava. Depois do export o objeto da comp fica inválido (`itemByID`). Objetos de
   propriedade/efeito também ficam inválidos ao adicionar irmãos: procure de novo pelo nome.
+- Texto que muda a cada quadro (contador, roleta) fica com fantasmas com motion blur: o valor desses templates vai
+  sem blur. Velocidade entra no tempo de TODAS as expressões (`t=(time-inPoint)*V/100-atraso`), inclusive na
+  semente do embaralhamento.
 - Expressões de Source Text: `value` é o texto digitado no Premiere (`value.text`); em outra propriedade use
   `text.sourceText.value`. Âncora pelo `sourceRectAtTime` do texto FINAL (fim da comp), senão treme enquanto conta.
 - Cor só no preenchimento: animador de texto "Fill Color" com expressão (o efeito Preencher pintaria o contorno).

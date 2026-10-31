@@ -3,7 +3,8 @@
 // Files and Access Network"). Log: %TEMP%\build_mogrts.log. ARGS (optional, set before $.evalFile):
 //   {style:"dinheiro", out:"<folder>"}   style = key of STYLES below; out = where .mogrt/.aep go (default: this folder)
 // Each template: 1080x1920 60 fps 10 s; layers CONTROLES (null at the caption line y=1138), VALOR, ROTULO.
-// Essential properties (editable in Premiere > Essential Graphics / Effect Controls): Valor, Rotulo, Cor, Tamanho, Brilho.
+// Essential properties (editable in Premiere > Essential Graphics / Effect Controls): Valor, Rotulo, Cor, Tamanho, Brilho,
+// Velocidade (%: 200 = twice as fast, 50 = half).
 // The animations are expressions (springs measured from the Remotion presets in ../motion), so Valor can be any text.
 (function () {
   var A = (typeof ARGS !== "undefined" && ARGS) ? ARGS : {};
@@ -32,7 +33,8 @@
   // per animation: expressions for the value line (delay 0) and the label (delay 0.1 s, or 0 for "queda")
   // pos(L) = extra [x,y] offset, scale(L) = %, rot(L) = deg, text(L) = Source Text, chars = per-letter selector amount
   function anims(name) {
-    var D = function (L) { return "var t=time-inPoint-" + (L == "ROTULO" && name != "queda" ? "0.1" : "0") + ";\n"; };
+    // t = animation time; Velocidade (%) scales it, so 200 plays everything twice as fast (delays included)
+    var D = function (L) { return "var t=(time-inPoint)*thisComp.layer('CONTROLES').effect('Velocidade')(1)/100-" + (L == "ROTULO" && name != "queda" ? "0.1" : "0") + ";\n"; };
     var popS = function (L) { return D(L) + SPR + "var s=spr(t,2.32,0.47);"; };
     switch (name) {
       case "pop": return {
@@ -58,7 +60,7 @@
         scale: function (L) { return L == "VALOR" ? popS(L) + SRC_T + SCRAMBLE_END + PUNCH + "var k=(60+40*s)*punch(t,scrEnd(src));[k,k]" : popS(L) + "[100*s,100*s]"; },
         text: function (L) { return L != "VALOR" ? null : D(L) + SRC + SCRAMBLE_END +
           "var o='',k=0;for(var i=0;i<src.length;i++){var c=src.charAt(i);if(/\\d/.test(c)){if(t<0.25+k*0.12){" +
-          "seedRandom(Math.floor(time*40)*7+i,true);o+=Math.floor(random(10));}else o+=c;k++;}else o+=c;}o"; }};
+          "seedRandom(Math.floor(t*40)*7+i,true);o+=Math.floor(random(10));}else o+=c;k++;}else o+=c;}o"; }};
     }
     throw new Error("anim " + name);
   }
@@ -98,6 +100,7 @@
     fx.addProperty("ADBE Color Control").name = "Cor"; fx.property("Cor").property(1).setValue(st.color);
     fx.addProperty("ADBE Slider Control").name = "Tamanho"; fx.property("Tamanho").property(1).setValue(100);
     fx.addProperty("ADBE Slider Control").name = "Brilho"; fx.property("Brilho").property(1).setValue(50);
+    fx.addProperty("ADBE Slider Control").name = "Velocidade"; fx.property("Velocidade").property(1).setValue(100);
     var tr = ctl.property("ADBE Transform Group");
     // children sit at the null's anchor: anchor 0,0 + position = the caption line in the middle of the frame
     tr.property("ADBE Anchor Point").setValue([0, 0]);
@@ -128,6 +131,8 @@
       }
     };
     setL(val, "VALOR"); setL(lab, "ROTULO");
+    // digits that change every frame (count/scramble) turn into ghosts with motion blur
+    if (name == "contador" || name == "roleta") val.motionBlur = false;
     // essential properties, in this order in Premiere
     val.property("ADBE Text Properties").property("ADBE Text Document").addToMotionGraphicsTemplateAs(comp, "Valor");
     lab.property("ADBE Text Properties").property("ADBE Text Document").addToMotionGraphicsTemplateAs(comp, "R\u00f3tulo");
@@ -136,6 +141,7 @@
     fx.property("Cor").property(1).addToMotionGraphicsTemplateAs(comp, "Cor");
     fx.property("Tamanho").property(1).addToMotionGraphicsTemplateAs(comp, "Tamanho");
     fx.property("Brilho").property(1).addToMotionGraphicsTemplateAs(comp, "Brilho");
+    fx.property("Velocidade").property(1).addToMotionGraphicsTemplateAs(comp, "Velocidade");
     comp.motionGraphicsTemplateName = comp.name;
     // the 2nd argument is the FOLDER; the file is named after motionGraphicsTemplateName. The export invalidates the
     // comp object, so look it up again by id.
