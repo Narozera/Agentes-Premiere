@@ -3,8 +3,10 @@
 Regras tiradas comparando a legenda final do usuário com a do Premiere e a do agente (`scripts/aprender.mjs`).
 Se uma regra conflitar com um pedido do usuário, o pedido vence.
 
-Base: 4 vídeos — GUALDEZI "Médico + Pinfer" (2 entrevistas, 410 legendas), Caio Xavier (advogado, monólogo, 564 legendas), GUALDEZI "Mãe Vitin + Bispo + Aposentada"
-(3 entrevistas de rua, 348 legendas) e MACHADO "Kilter + Armamento + 2 Esquerda" (4 entrevistas de política, 567).
+Base (com legenda final do usuário): 4 vídeos — GUALDEZI "Médico + Pinfer" (2 entrevistas, 410 legendas), Caio Xavier
+(advogado, monólogo, 564 legendas), GUALDEZI "Mãe Vitin + Bispo + Aposentada" (3 entrevistas de rua, 348 legendas) e
+MACHADO "Kilter + Armamento + 2 Esquerda" (4 entrevistas de política, 567). Já legendados pelo agente, sem a correção
+dele ainda: ERIC (3 vídeos) e Perrengues do Brás 25–33 — ver glossário e Histórico.
 Confiança cresce a cada vídeo novo. **Leia também `glossario.md`** (nomes e termos por cliente/assunto).
 
 ## Taxa de acerto medida (`aprender.mjs`, seção "Taxa de acerto")
@@ -145,4 +147,9 @@ aparece na tela.
   dos vídeos finais). Teste às cegas do agente (texto feito sem ver a legenda do usuário): palavras 97,3%, divisão
   86,6%. Relatórios na pasta `legendas-trabalho/sequencia01` do projeto.
 - 30/10/2026 — GUALDEZI, Mãe Vitin + Bispo + Aposentada (3 entrevistas numa sequência; SRT do Premiere + timeline lida no
-  Premiere: cortes, câmeras e animações). Relatório: `D:EDIÇÃOGUALDEZIMÃE VITIN + BISPO + APOSENTADAlegendas-trabalhosequencia01aprendizado`.
+  Premiere: cortes, câmeras e animações). Relatório: `D:\EDIÇÃO\GUALDEZI\MÃE VITIN + BISPO + APOSENTADA\legendas-trabalho\sequencia01\aprendizado\`.
+- 30–31/10/2026 — ERIC "3 IBIRA", "DA AUTO SAPATOS" e "VIDEO URGENTE" (entrevistas de rua, câmera 1 em plano aberto;
+  glossário "Relacionamento / rua"); Perrengues do Brás 25–33 (glossário "Comércio / lojas do Brás"). Sem legenda
+  final do usuário ainda — a taxa de acerto desses não foi medida.
+- 01/11/2026 — teste às cegas com a skill revisada (MACHADO, Médico + Pinfer, Mãe Vitin) e conserto do
+  `captions.ps1`: ver tabela "Taxa de acerto" e "Lições aprendidas" do SKILL.md.

@@ -15,7 +15,9 @@ Regras:
 - Animações na linha da legenda (y 1138; em sequência 4K, Escala 200 no Movimento → y 2276) e no tempo da legenda
   que tem o valor. Se a timeline mudou desde as legendas, converta os tempos com `remap.mjs` antes de colocar.
 - Não mexa em legendas: nunca crie, altere nem importe SRT/trilha de legendas. Animações e legendas são agentes
-  separados; as legendas só servem de leitura para achar fala e tempo.
+  separados; as legendas só servem de leitura para achar fala e tempo. Antes de transcrever, procure `words.csv` e
+  `dump.json` já prontos em `<pasta do projeto>\legendas-trabalho\<nome>\`. Ao terminar, avise que as legendas
+  embaixo das animações novas são tiradas pelo agente de legendas (ele roda o `captions.ps1` de novo).
 - Prefira os templates MOGRT da biblioteca (editáveis pelo usuário). Reaproveite e altere o que já existe; o que
   criar de novo, salve na biblioteca da skill. Guarde o `spec.json` de cada vídeo na pasta `animacoes` do projeto.
 - Se o pedido trouxer outra fonte, cor, trilha, posição ou categoria, ela vale sobre os padrões da skill.

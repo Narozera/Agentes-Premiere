@@ -84,9 +84,13 @@ No Remotion (`render-motion.ps1`) os mesmos nomes existem; lá `roleta` gira os 
    colocar, Movimento > Escala 200 em cada clipe (linha da legenda fica em y 2276).
 4. Coloque e preencha (Valor = linha 1, Rótulo = linha 2; contador/roleta animam o número do próprio Valor):
    `var ARGS={trackIndex:2, items:[{mogrt:"<$SK>/mogrt/Dinheiro - Impacto.mogrt", start:74.62, dur:1.08, valor:"R$ 9", rotulo:"MÍNIMO"}]}; $.evalFile("<$SK>/scripts/place_mogrt.jsx");`
-   Confira no retorno que `valor`/`rotulo` voltaram com o texto certo e que início/fim batem.
+   Campos opcionais por item (mesmos do Controle de efeitos): `cor:[r,g,b]` (0–1), `corRotulo`, `tamanho`,
+   `espacamento`, `brilho`, `velocidade` (30 = normal). A troca de fonte só se faz no Premiere.
+   Confira no retorno que `valor`/`rotulo` voltaram com o texto certo, que início/fim batem e que não há `...Warn`.
 5. Relate: tabela (tempo, fala, texto, animação e por quê), trilha usada, que tudo é editável no Controle de efeitos,
-   que o `spec.json` ficou salvo e que o projeto não foi salvo.
+   que o `spec.json` ficou salvo e que o projeto não foi salvo. **Se as legendas já estavam prontas**, avise que as
+   que caem embaixo das animações novas continuam lá: o agente de legendas as tira rodando de novo o passo 5 dele
+   com um `dump.json` novo (ordem ideal: animações antes da legenda final).
 
 ## Remontar os templates no After Effects
 `& "$SK\mogrt\build-mogrts.ps1" [-Style dinheiro]` — roda o `build_mogrts.jsx` no AE, confirma sozinho os avisos de
@@ -111,12 +115,14 @@ pode ser vermelha) e conclusão que bate (`total`). Todos os tempos em segundos 
 **legendas corrigidas do usuário** (início da legenda de cada número; quadro do início da 1ª frase da conta ao fim da
 frase que fecha). Medidas na base 1080 (escalam com a largura); deixe vazia a faixa da legenda (y 1080–1200 na base
 1080). Exemplo pronto: `D:\EDIÇÃO\Caio Xavier\29-10\9 VIDEOS\animacoes\8366\quadro.json` (simulação de empréstimo).
-Render 4K de ~43 s sem blur: ~7 min. Coloque o `.mov` com `scripts/place.jsx` numa trilha livre acima das imagens.
+Render 4K de ~43 s sem blur: ~7 min. Coloque o `.mov` com `scripts/place.jsx` numa trilha livre acima das imagens:
+`var ARGS={trackIndex:4, bin:"Animações de texto", items:[{file:"<pasta>/quadro_emprestimo.mov", start:81.2, dur:43.1}]}; $.evalFile("<$SK>/scripts/place.jsx");`
+(`bin` é obrigatório: é a pasta do projeto onde o arquivo é importado.)
 
 ## Remotion (vídeo .mov)
 `& "$SK\scripts\render-motion.ps1" -Spec spec.json -OutDir "<pasta do projeto>\animacoes"` (instala/atualiza o
 projeto `motion/` sozinho; ~15–20 s por item) e **olhe o `preview.png`** (linha vermelha = `lineY`). Coloque com
-`scripts/place.jsx` (`{file, start, dur}`).
+`scripts/place.jsx` (`{trackIndex, bin, items:[{file, start, dur}]}`, exemplo na seção do quadro).
 
 ## Refazer/substituir uma animação já colocada
 MOGRT: só trocar Valor/Rótulo/Cor no Controle de efeitos (ou `place_mogrt.jsx` de novo). Para trocar o TIPO de
@@ -156,7 +162,7 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
 - Roleta em coluna: a coluna tem a largura do dígito FINAL (um "1" é estreito), senão sobra espaço ("R$ 1 00").
 - PowerShell: um parâmetro tipado `[string]$Spec` e a variável `$spec` são a mesma — atribuir um objeto o converte em texto.
 - Prévia de vídeo com alfa: use `trim=start=` no filtro, não `-ss` no input (dessincroniza com o fundo).
-- Sequência 4K vertical (2160×3840): dobre tudo no spec (width/height, `lineY` ≈ 2276, tamanhos, `"stroke":12`); no
-  MOGRT use Tamanho 200 e ajuste a posição no Movimento do clipe.
+- Sequência 4K vertical (2160×3840), Remotion: dobre tudo no spec (width/height, `lineY` ≈ 2276, tamanhos,
+  `"stroke":12`). MOGRT: só Movimento > Escala 200 (ver 1ª lição) — não mexa no campo Tamanho para isso.
 - Para checar rosto, componha um frame do .mov sobre o frame da fonte aplicando a Escala/Posição do clipe de V1/V2
   (ffmpeg `scale` + `crop`); ExtendScript: objeto com chave `in` sem aspas dá "EvalScript error".

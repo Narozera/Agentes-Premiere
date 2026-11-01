@@ -43,7 +43,7 @@ Scripts em `~/.claude/skills/reenquadrar-entrevistado/scripts/` (abaixo, `$SK`).
    a) folha grosseira: `& "$SK\scripts\measure_sheet.ps1" -Job job.json -Clips 0,1,2,3 -Out m0.png` (4 por folha,
       não misture 4K e 1080 na mesma folha). A grade está em pixels da fonte (rótulos brancos nas linhas vermelhas;
       linha fina a cada 108 px). Anote faceX (centro do rosto, não do cabelo) e headY (topo do cabelo/tiara).
-   b) refino: `& "$SK\scripts\xcrop.ps1" -Items "clip:t:x:y;..." -Half 600` (t=-1 = meio do clipe) desenha uma cruz
+   b) refino: `& "$SK\scripts\xcrop.ps1" -Job job.json -Items "clip:t:x:y;..." -Half 600 -Out xc0.png` (t=-1 = meio do clipe) desenha uma cruz
       amarela na estimativa; corrija pelo desvio em relação à cruz. A folha sozinha erra ±40 px; com o xcrop fica
       ±15 px de saída. Use a mesma convenção (rosto de frente: centro do rosto; perfil/3/4: centro da cabeça) no
       clipe de referência e nos outros.
@@ -54,7 +54,8 @@ Scripts em `~/.claude/skills/reenquadrar-entrevistado/scripts/` (abaixo, `$SK`).
 6. **Verificar ANTES de aplicar** (nunca exporte frame do Premiere por script — trava com MOGRT na sequência):
    `& "$SK\scripts\verify_head.ps1" -Job job.json -OutDir . -Clips 0,1,2,3,4,5,6 -Out rev0.png` (lotes de 7;
    recorte da cabeça no quadro de SAÍDA a 1:3, réguas em ciano, grade a cada 108 px de saída) e olhe **todas** as
-   folhas. Tolerância ~50 px no vídeo. Clipes longos (> 3 s): `-Step 0.5`, o rastreador pode derivar sem score
+   folhas. O recorte padrão (`-RX 432 -RY 216 -RW 1296 -RH 1296`) é para sequência 4K; em **1080×1920 passe
+   `-RX 216 -RY 108 -RW 648 -RH 648`** (ou centre no `guideX/guideY`). Tolerância ~50 px no vídeo. Clipes longos (> 3 s): `-Step 0.5`, o rastreador pode derivar sem score
    baixo. (`verify.ps1` mostra o quadro inteiro em miniatura; serve para uma visão geral.)
 7. **Corrigir** onde desviar: meça os frames problemáticos com `xcrop.ps1` (ou `crop_sheet.ps1 -Marks`), coloque em
    `job.json` → `"manual":{"4":[[23.5,1188,1092],[24.4,1218,1092]]}` (3+ pontos: início/meio/fim) e repita 5–6.
@@ -74,119 +75,53 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
 - **Base 146**: respostas curtas, transições, falas neutras.
 - **Zoom lento** (ex.: [146,160], [146,170], [170,185]): clipes > ~2 s com fala que cresce; o final do vídeo.
 
-## Lições aprendidas
-- **keys.json sem colchetes externos** (editado à mão) faz o `eval` do ExtendScript devolver só o ÚLTIMO clipe
-  (operador vírgula) e corrompe os clipes aplicados. Ao editar keys.json manualmente, regrave com
-  `'[' + (clipes -join ',') + ']'`. O `apply_keys.jsx` agora valida o formato e não aplica nada se estiver errado. (não repita)
+## Lições aprendidas (regras; os casos com data e números estão em `LICOES.md`)
+- **keys.json sem colchetes externos** (editado à mão) faz o `eval` do ExtendScript devolver só o ÚLTIMO clipe e
+  corrompe os clipes aplicados. Regrave com `'[' + (clipes -join ',') + ']'`; o `apply_keys.jsx` valida e não aplica se estiver errado.
 - PowerShell 5.1: nomes de variável **não** diferenciam maiúsculas (`$K`=`$k`, `$W`=`$w`); `[math]::Max(0, x)`
   arredonda para inteiro (use `0.0`); scripts com acento precisam de UTF-8 **com BOM**; use InvariantCulture;
   `Add-Member "32" ...` falha (use `-MemberType NoteProperty -Name "32"`); não chame função de `R` (alias de
-  `Invoke-History`).
-- Escala 100 = pixels nativos. 4K numa sequência 1080 "cabe" em 50.
-- Keyframes no ExtendScript usam **tempo da mídia**: `clip.inPoint.seconds + offset`.
-- Interpolar Escala e Posição linearmente com os mesmos tempos mantém o rosto fixo durante o zoom.
-- Suavização de 0,5 s atrasa em pans rápidos; 0,3 s (3 amostras) é o equilíbrio.
-- O rastreador erra quando a mão/microfone cobre o rosto no início do clipe: confira sempre o começo e o fim.
-- Propriedades do Motion: `properties[0]`=Posição, `[1]`=Escala (nomes vêm traduzidos, ex.: "Posição").
-- **Fonte do mesmo tamanho da sequência** (ex.: 2160×3840 em 2160×3840): escala 100 não deixa margem nenhuma; em 144
-  o rosto só pode estar a ±330 px (fonte) do centro horizontal (faceX ~750–1410) — fora disso o keys.ps1 sobe a escala
-  (chegou a 240). Câmera na mão com o entrevistado no canto = esperar várias escalas altas; relate quais.
-- **Deduzir as réguas de um trecho que o usuário enquadrou**: em vez de medir na folha grosseira e aplicar a fórmula,
-  renderize com ffmpeg o quadro de SAÍDA com a escala/posição dele (`scale=W*s:H*s,crop=seqW:seqH:(W*s/2-posX):(H*s/2-posY)`)
-  com grade em pixels de saída e leia direto onde caem rosto e topo da cabeça. (DA AUTO SAPATOS: x≈1025→1080, y≈495-510.)
-- Passos seguidos do mesmo tamanho máximo no track.json = a busca do rastreador saturou (pan muito rápido); aumente
-  `R` no track.ps1 (padrão 36; com 14 saturava em câmera na mão) ou use `manual`.
-- **Medição manual precisa**: a folha do measure_sheet (1 px ≈ 4,3 px da fonte) erra 40-100 px no centro do rosto.
-  Para correções use recorte com zoom (ex.: `crop=1512:1296:324:0,scale=756:648` → 1 px = 2 px da fonte, grade a cada
-  108) e meça vários tempos (0,2-0,3 s) nos trechos com pan rápido; manual com só 1-2 pontos no início funciona.
-- **Premiere instável**: o usuário pode estar editando ao mesmo tempo (houve crash e um clipe novo, um PNG, entrou na V2).
-  Antes de aplicar, rode o dump de novo e compare inPoint/duração; ignore clipes de outra mídia ou com escala/keyframes
-  feitos à mão; aplique em lotes de 3-4 clipes por chamada (`only:[...]`).
-- **Vários takes/vídeos na mesma trilha** (2026-10-29, "21 + 22 + 23 + 24"): track.json/keys.json/apply_keys são
-  POSICIONAIS — o job tem de listar TODOS os clipes da trilha, em ordem (index = posição; o keys.ps1 agora aborta se não).
-  Não faça um job por arquivo. Use campos por clipe (já suportados pelos scripts): `"media"` (arquivo do take),
-  `"guideX"/"guideY"` (réguas de cada vídeo), `"speed"` e `"maxZoom"`. Inclua os clipes de referência e os que não serão
-  aplicados (b-roll) no job e só deixe-os fora do `only` do apply. measure_sheet: `-TimesClip <i>` usa a mídia do clipe i.
-- **Réguas de cada vídeo a partir do clipe que o usuário enquadrou**: rastreie também o clipe de referência e calcule, em
-  cada amostra, `saida = posUsuario(t) + (rosto - fonte/2) * escala` com os keyframes dele interpolados → média. Deu
-  vídeo 1 x≈472 y≈247 e vídeo 2 x≈508 y≈244 (NÃO são 540/384, e diferem 36 px em x entre os vídeos). Posição vem
-  normalizada (0-1) no ExtendScript.
-- **Clipe com velocidade alterada** (`getSpeed()` != 1): `inPoint` vem em tempo "esticado" (in*speed = tempo real da
-  mídia; o in passa do fim do arquivo!). No job ponha `in`/`dur` REAIS da mídia e `"speed"`; o keys.ps1 divide os tempos
-  por speed (offsets de timeline, que é o que o apply usa sobre `inPoint`) e o verify busca `in + t*speed`.
-- **Rosto colado na borda da fonte** (iPhone cortou a pessoa): a escala "mínima sem borda" pode passar de 300. Use
-  `"maxZoom"` no clipe: a escala para nesse valor e a posição é presa na borda (o rosto sai da régua só nesse trecho).
-- **Medir com marcador**: ler a grade a olho erra ±40 px; desenhe uma cruz amarela na estimativa (crop 540×540 da fonte em
-  1:1) e corrija pelo desvio em relação à cruz. Em clipes longos (>3 s) use `verify.ps1 -Step 0.5`: o rastreador derivou
-  até 150 px de saída em 9,8 s sem score baixo (clipe 32) — 3 amostras não mostram isso.
-- Clipes de b-roll/cutaway no meio da câmera 2 (outra cena, sem o entrevistado): não aplique; relate.
-- Se só o out-point de um clipe mudou (trim no fim, in igual), os keyframes continuam válidos: basta cortar os keys
-  depois da nova duração (não precisa rastrear de novo).
-- **`execute_extendscript` muda de comportamento entre versões da ponte**: em 2026-10-29 só devolvia o que vinha de
-  `return`; em 2026-10-30 qualquer `return` no topo dava "EvalScript error" e o certo era terminar com a expressão
-  (`...; $.evalFile("...");` ou `JSON.stringify(x)`). Teste com `JSON.stringify({a:1})` e, se falhar, `return JSON.stringify({a:1})`.
-  Em literais de objeto do ExtendScript, `in` como chave (`{in: 1}`) quebra o script inteiro — use `inp`.
-- **Ponte MCP "não está rodando" com o Premiere aberto**: veja `%TEMP%\premiere-mcp-bridge\bridge-heartbeat.json`; se o
-  horário parou, o painel travou (janela modal aberta ou painel suspenso). Peça para fechar diálogos e reabrir
-  Window > Extensions > MCP Bridge. Enquanto isso dá para adiantar medição/rastreamento/verificação (só ffmpeg).
-- **Sequência 4K (2160×3840)**: réguas e `seqW/seqH` em pixels 4K (padrão vira x=1080, y=768). O `dump_clips` diz o tamanho.
-- **Referência com rastreamento ruim** (2026-10-30, clipe 29 com score 0,44 e cabeça inclinada): a média
-  `posUsuario + (rosto - fonte/2) * escala` deu x=967, mas o quadro de saída renderizado mostrava o rosto em ~1090.
-  Quando o clipe de referência tem score baixo, leia as réguas direto do quadro de saída renderizado (2-3 tempos).
-- **Cabelo volumoso (cacheado) puxa a medição a olho**: na folha 1:4 o centro do rosto saiu ~45 px (fonte) à esquerda em
-  alguns clipes. A verificação pega isso (rosto ~100 px de saída fora da régua); corrija com recorte 1:1 + linha amarela
-  no valor rastreado e `manual` com 3 pontos (início/meio/fim).
-- **Sony 4K "deitado" com rotação** (2026-10-30, ERIC/3 IBIRA): o ffprobe diz 3840×2160 mas com `rotation=-90`; o ffmpeg
-  gira sozinho e a imagem é 2160×3840, igual à sequência 4K. Use srcW=2160, srcH=3840. Clipes em escala 100 não têm
-  margem: TODO reposicionamento obriga a subir a escala (lá subiu +12 a +60; o keys.ps1 faz isso). Relate a lista.
-- **Folhas de verificação em 4K**: as miniaturas do verify.ps1 (432×768) são pequenas demais para medir desvio. Use
-  `scripts/verify_head.ps1` (recorte da região da cabeça do quadro de SAÍDA a 1:3, grade a cada 108 px, réguas em ciano;
-  `-RX/-RY` mudam o recorte) e `scripts/crop_sheet.ps1` (fonte a 1:2 com `-Marks "x,y;..."` desenhando cruz amarela no
-  valor rastreado) para medir correções.
-- **Referência com keyframes que não seguem o rosto** (clipe longo, 4 keys espaçados): a média do rastreamento deu
-  x=886 com espalhamento de 700-1090 — inútil. Renderize o quadro de saída da referência e leia onde fica o centro dos
-  óculos/olhos com o rosto de FRENTE (lá: ~1020) e o centro da cabeça com o rosto 3/4. Depois compare com os quadros de
-  frente da verificação: se todos os clipes do vídeo ficam deslocados igual (lá ~-90 px), a medição a olho tem viés
-  (cabelo volumoso de um lado) — corrija deslocando a régua daquele vídeo (1000 → 1090), não clipe a clipe.
-- **Rastreador deriva quando a pessoa vira de 3/4 para frente** mesmo com score > 0,85 (template pego no meio, de 3/4):
-  erro de ~100-140 px da fonte no começo/fim (clipes 88 e 98 do IBIRA). Use `manual` com 6-12 pontos medidos com cruz.
-- **Escala mínima muito acima dos vizinhos**: quando a escala mínima fica muito acima dos vizinhos (184 vs 125) por um trecho curto em
-  que a pessoa se inclina para a borda, use `"maxZoom"` (ex.: 160) e relate que o rosto sai da régua nesse trecho.
-- **Usuário editando durante o trabalho (de novo)**: a referência foi cortada em dois (99 → 100 clipes) entre a
-  verificação e a aplicação. Refaça o dump antes de aplicar; para reindexar sem rastrear de novo, insira o clipe novo
-  no job e duplique a entrada correspondente no track.json (os dois são posicionais), mova as chaves de `manual`, gere
-  keys.json e compare as strings de keys antigas×novas (devem ser idênticas). Aplique com `scripts/apply_checked.jsx`
-  (`ARGS={trackIndex, n, keysPath, only, exp:{"i":[in,dur]}}`): ele confere nº de clipes e in/duração de cada clipe do
-  lote antes de chamar o apply_keys.
-- **Resoluções misturadas na mesma trilha** (2026-10-30, "25 + ... + 33": iPhone 4K 2160×3840 e iPhone 1080×1920, proxies
-  540×960 e 404×720): ponha `"srcW"/"srcH"` e `"faceOffset"` (150 no 4K, 75 no 1080) POR CLIPE no job — todos os scripts
-  agora leem por clipe (`Get-WH` em common.ps1). Confira com ffprobe (vem "1920,1080,-90" = 1080×1920 em pé). O
-  measure_sheet usa o tamanho do 1º clipe da folha: não misture 4K e 1080 na mesma folha.
-- **Fonte 1080×1920 em escala 100 numa sequência 1080×1920 não tem margem nenhuma**: qualquer posição diferente do centro
-  dá borda preta, então "só posição mantendo a escala" é impossível. Feito: subir só o mínimo (keys.ps1) com
-  `"maxZoom"` = escala da referência do grupo (nunca passar da referência; onde o mínimo passaria, a posição fica presa
-  na borda e o rosto sai um pouco da régua). Relate a escala nova de cada clipe. Grupo em que o usuário pôs escala/posição
-  à mão de propósito (ex.: 63 com posição manual): `"maxZoom"` = escala atual — mantém a escala e só segue o rosto até a borda.
-- **Medição precisa e rápida**: `scripts/xcrop.ps1 -Items "clip:t:x:y;..." -Half 600` (t=-1 = meio do clipe) recorta em
-  volta da estimativa com janela proporcional à largura da fonte (mesma área do corpo em 4K e 1080) e desenha a cruz
-  amarela; leia o desvio em relação à cruz (grade a cada 54 px do tile). Comece com a folha grosseira, depois 1 rodada de
-  xcrop: deu ±15 px de saída na maioria. Janela pequena demais (-Half 270) não mostra o rosto inteiro.
-- **Perfil/3/4**: use sempre a mesma convenção no clipe de referência e nos outros (ex.: média entre centro do rosto e
-  centro da cabeça nariz↔nuca). A leitura a olho variou ~40 px (fonte) entre duas folhas no mesmo quadro (clipe 19):
-  se a verificação mostra um clipe inteiro deslocado igual e o resto do grupo certo, some o desvio em x no track.json
-  daquele clipe (sem rastrear de novo) em vez de `manual`.
-- **Cutaway do apresentador dentro do arquivo do iPhone** (o apresentador falando para a câmera, mesmo arquivo, logo
-  depois das respostas): não é o entrevistado — não aplique; relate (o keys.json já fica pronto se pedirem).
-- `apply_checked.jsx` com `exp` grande: grave o objeto num arquivo e leia no ExtendScript com
-  `eval("(" + f.read() + ")")` em vez de colar na chamada.
-- **Caminho com acento (D:\EDIÇÃO) corrompido no job.json** (2026-10-31): `Get-Content -Raw` no PowerShell 5.1 lê UTF-8
-  sem BOM como ANSI; ao regravar o job os caminhos viram "EDIÃ‡ÃƒO" e o ffmpeg não acha mídia nem proxy. Leia e regrave
-  sempre com `[IO.File]::ReadAllText` / `WriteAllText`. Números do `ConvertFrom-Json` podem vir como decimal:
-  `.ToString('R', inv)` falha — converta para `[double]` antes.
-- **Referência que segue o CENTRO DA CABEÇA** (2026-10-31, VIDEO URGENTE, 6 keys em 0,7 s): no quadro de saída o centro
-  dos óculos oscilou -115..0 px da régua quando a pessoa virava, mas o centro da cabeça (cabelo+coque) ficou fixo em
-  ~1065. Antes de concluir que a referência "não segue o rosto", meça o centro da cabeça. Para as réguas, use a medição
-  da referência com a MESMA convenção (xcrop) que os outros clipes: `saida = pos + (medida - fonte/2) * escala`.
-- **Sony 4K em pé (2160×3840) a 100 numa sequência 4K com referência em 139**: com réguas x=1080, y=700 a escala mínima
-  sem borda deu 111-132 (subir a cabeça até a régua e centralizar exige zoom); `"maxZoom": 139` não chegou a atuar.
-  Medição: folha grosseira (4 por linha) + 1 rodada de `xcrop -Half 600` em todos os clipes bastou (verificação sem correção).
+  `Invoke-History`). `Get-Content -Raw` lê UTF-8 sem BOM como ANSI e corrompe `D:\EDIÇÃO` ao regravar o job: use
+  `[IO.File]::ReadAllText/WriteAllText`; números do `ConvertFrom-Json` podem vir como decimal — converta para `[double]`.
+- Escala 100 = pixels nativos. 4K numa sequência 1080 "cabe" em 50. Keyframes no ExtendScript usam **tempo da mídia**
+  (`clip.inPoint.seconds + offset`). Propriedades do Motion: `properties[0]`=Posição, `[1]`=Escala (nomes traduzidos).
+  Posição vem normalizada (0–1) no ExtendScript.
+- Interpolar Escala e Posição linearmente com os mesmos tempos mantém o rosto fixo durante o zoom. Suavização de
+  0,3 s (3 amostras) é o equilíbrio; 0,5 s atrasa em pans rápidos.
+- **Fonte sem margem** (fonte do mesmo tamanho da sequência em escala 100, ou 1080 em 1080): qualquer posição fora do
+  centro dá borda preta, então "só posição mantendo a escala" é impossível. O `keys.ps1` sobe só o mínimo; limite com
+  `"maxZoom"` (= escala da referência do grupo, ou = escala atual quando o usuário pôs escala à mão de propósito): a
+  posição fica presa na borda e o rosto sai um pouco da régua nesse trecho. Relate a escala nova de cada clipe.
+  Rosto colado na borda da fonte pode pedir escala > 300: `"maxZoom"` também.
+- **Rastreador**: erra quando mão/microfone cobre o rosto no início (confira começo e fim); passos seguidos do mesmo
+  tamanho máximo no track.json = busca saturou (`R` no track.ps1, padrão 36); deriva ~100–140 px quando a pessoa vira de
+  3/4 para frente mesmo com score > 0,85 (`manual` com 6–12 pontos); em clipes > 3 s pode derivar 150 px sem score
+  baixo (`verify_head -Step 0.5`). Antes de sobrescrever com `manual`, compare com o track.json: se ele concorda com
+  o movimento (pan real), o problema é outro.
+- **Medição**: folha grosseira erra 40–100 px e cabelo volumoso puxa o centro para um lado; o refino com cruz
+  (`xcrop`) fica em ±15 px. Mesma convenção (rosto de frente: centro do rosto; perfil/3/4: centro da cabeça) na
+  referência e nos outros clipes. Clipe inteiro deslocado igual, resto do grupo certo: some o desvio no track.json
+  daquele clipe. Vídeo inteiro deslocado igual: mova a régua daquele vídeo, não clipe a clipe.
+- **Réguas a partir do clipe que o usuário enquadrou**: renderize o quadro de SAÍDA com a escala/posição dele
+  (`scale=W*s:H*s,crop=seqW:seqH:(W*s/2-posX):(H*s/2-posY)`) e leia direto onde caem rosto e topo da cabeça, ou
+  `saida = pos + (medida - fonte/2) * escala` com a medição do xcrop. Referência com score baixo ou com poucos keys
+  espaçados: leia do quadro renderizado (2–3 tempos), não da média do rastreamento. Antes de concluir que a referência
+  "não segue o rosto", meça o centro da cabeça (o usuário às vezes segue a cabeça, não os olhos). As réguas de cada
+  vídeo diferem (já deu 472/247 × 508/244) — não assuma 540/384.
+- **Vários takes na mesma trilha**: track/keys/apply são POSICIONAIS — o job lista TODOS os clipes da trilha em ordem
+  (o keys.ps1 aborta se não), com campos por clipe: `media`, `guideX/guideY`, `srcW/srcH`, `faceOffset` (150 no 4K,
+  75 no 1080), `speed`, `maxZoom`. B-roll, cutaway do apresentador e clipes de referência entram no job e ficam fora
+  do `only`. Não misture 4K e 1080 na mesma folha do measure_sheet. Sony 4K "deitado" (ffprobe 3840×2160 com
+  `rotation=-90`) é 2160×3840: use srcW=2160, srcH=3840.
+- **Clipe com velocidade alterada** (`getSpeed()` != 1): `inPoint` vem esticado. No job ponha `in`/`dur` REAIS da
+  mídia e `"speed"`; o keys.ps1 divide os tempos por speed e o verify busca `in + t*speed`. No `exp` do
+  `apply_checked.jsx` vão os valores brutos do dump (é o que ele compara).
+- **Usuário editando durante o trabalho**: refaça o dump antes de aplicar; para reindexar sem rastrear de novo, insira
+  o clipe novo no job e duplique a entrada no track.json, mova as chaves de `manual`, gere keys.json e compare as
+  strings antigas × novas. Só o out-point mudou: corte os keys depois da nova duração. `exp` grande: grave num arquivo
+  e leia com `eval("(" + f.read() + ")")`.
+- **Sequência 4K (2160×3840)**: réguas e `seqW/seqH` em pixels 4K (padrão x=1080, y=768); o `dump_clips` diz o tamanho.
+- **`execute_extendscript`** muda entre versões da ponte: termine com a expressão (`...; $.evalFile("...");`), e se
+  falhar use `return`. `in` como chave de objeto (`{in: 1}`) quebra o script — use `inp`. Ponte "não está rodando" com
+  o Premiere aberto: veja `%TEMP%\premiere-mcp-bridge\bridge-heartbeat.json`; se parou, peça para fechar diálogos e
+  reabrir Window > Extensions > MCP Bridge. Enquanto isso, medição/rastreamento/verificação só precisam do ffmpeg.

@@ -74,4 +74,7 @@ taxa de acerto do `aprender.mjs`. Sempre olhe a imagem antes de aplicar no Premi
 - PowerShell 5.1: variáveis não diferenciam maiúsculas (`$out` = `$Out`, `$model` = `$Model`); arquivos com acento
   precisam de BOM; o pipe para programas nativos é ASCII (use arquivos temporários). Scripts `.jsx` do AE ficam só em
   ASCII (use `\u00f3`).
-- Cada `SKILL.md` tem "Lições aprendidas": acrescente lá o que evitaria um erro.
+- Cada `SKILL.md` tem "Lições aprendidas" com as **regras**; o caso que deu origem (data, projeto, números) vai para o
+  `LICOES.md` da skill. Ao aprender algo novo: regra curta no `SKILL.md`, história no `LICOES.md`.
+- Ordem de trabalho num vídeo: posição → animações → legenda final (a legenda embaixo de animação só é tirada se a
+  animação já estava na timeline). Se as legendas vieram antes, o agente de legendas roda o `captions.ps1` de novo.

@@ -10,8 +10,12 @@ Seu único trabalho é a **Posição** (Motion → Posição) dos clipes de uma 
 Siga o procedimento da skill em `C:\Users\Gustavo\.claude\skills\reenquadrar-entrevistado\SKILL.md`
 (leia-o inteiro antes de começar), com estas diferenças:
 
-1. No passo 1, `dump_clips.jsx` devolve `scale` de cada clipe. No `job.json`, use `"zoom": scale` de cada clipe
-   (escala atual, inicial e final) em vez de montar um plano de zoom.
+1. No passo 1, `dump_clips.jsx` devolve `scale` de cada clipe (escala inicial e final). No `job.json`, use
+   `"zoom": scale` e `"maxZoom": <a maior das duas>` em cada clipe, em vez de montar um plano de zoom: assim a escala
+   só sobe até o que o clipe já tem; onde mesmo assim faltar margem, a posição fica presa na borda e você relata.
+   **Aviso**: o `apply_keys.jsx` apaga os keyframes antigos de Escala e recria só início→fim. Clipe com zoom que tem
+   pontos no meio (sobe, para, sobe) perde esse desenho — liste esses clipes (o dump mostra `scale` com dois valores
+   diferentes) e pergunte antes de aplicar neles.
 2. Trilha padrão: V2 (`trackIndex: 1`). Réguas padrão: x=540, y=384 em 1080×1920. Se o pedido citar outra trilha,
    outras réguas ou outra resolução, use os valores pedidos.
 3. Faça a verificação completa (passo 6) de **todos** os clipes antes de aplicar, corrija com medições manuais
