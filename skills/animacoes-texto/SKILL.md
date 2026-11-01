@@ -1,6 +1,6 @@
 ---
 name: animacoes-texto
-description: Cria animações de texto para entrevistas no Premiere Pro quando a pessoa fala de dinheiro (Digital-7 verde), quantidades (X pessoas, X mercadorias... em DK Longreach) e anos (DK Longreach vermelho) — encontra as menções na transcrição, escolhe a melhor animação para cada caso (pop, queda, impacto, cascata, contador, roleta) e coloca na timeline como gráfico EDITÁVEL (MOGRT feito no After Effects) na linha da legenda. Também renderiza versões em vídeo (Remotion, com motion blur) quando precisar de algo que o MOGRT não faz. Fontes e cores podem ser trocadas a pedido.
+description: Cria animações de texto para entrevistas no Premiere Pro quando a pessoa fala de dinheiro (números em Digital-7 verde, palavras em Montserrat Bold), quantidades (X pessoas, X mercadorias... em DK Longreach) e anos (DK Longreach vermelho) — encontra as menções na transcrição, escolhe a melhor animação para cada caso (pop, queda, impacto, cascata, contador, roleta) e coloca na timeline como gráfico EDITÁVEL (MOGRT feito no After Effects) na linha da legenda. Quando a pessoa faz uma conta (empréstimo, juros, parcelas, lucro), monta um quadro de contas em tela cheia (Remotion) com a conta aparecendo linha a linha. Também remonta/atualiza os templates MOGRT da biblioteca. Use sempre que o usuário pedir motion, animação, destaque ou "efeito" em valores, preços, números, quantidades, anos ou contas de um vídeo no Premiere, mesmo sem dizer "MOGRT". Não serve para legendas (isso é a skill legendas-entrevista).
 ---
 
 # Animações de texto (dinheiro, quantidades, anos)
@@ -30,7 +30,7 @@ de legendas corrigido, todos em tempo de timeline).
 
 Alterar uma animação da biblioteca (velocidade, mola, brilho...): edite `mogrt/build_mogrts.jsx` (as animações são
 expressões; molas em `spr(t, freqHz, amortecimento)`), rode de novo (abaixo) e confira o render. Nova categoria
-(quantidade/anos): `var ARGS={style:"quantidade"}` antes do `$.evalFile` — gera `Quantidade - *.mogrt`.
+(quantidade/anos): `build-mogrts.ps1 -Style quantidade` — gera `Quantidade - *.mogrt`.
 
 ## Estilos padrão do usuário (fonte e cor podem ser trocadas quando ele pedir)
 | Categoria | Exemplos | Fonte | Cor |
@@ -67,17 +67,21 @@ No Remotion (`render-motion.ps1`) os mesmos nomes existem; lá `roleta` gira os 
 10 s e o clipe entra cortado em `dur`, para o usuário puxar a ponta.
 
 ## Passo a passo (MOGRT — padrão)
-1. Legendas corrigidas + `words.csv` (skill `legendas-entrevista`). Liste as legendas com valor (dinheiro /
-   quantidade / anos), juntando as seguidas que repetem o valor. Ignore horas, endereços e perguntas.
+1. Leia as legendas corrigidas do usuário (exporte a trilha dele em SRT ou use o `<nome> - final.srt`) e, se
+   existir, o `words.csv`. Sem transcrição, use só o `dump_timeline.jsx` + `transcribe.ps1` da skill
+   `legendas-entrevista` (só leitura) — nunca o `captions.ps1` nem o `import_srt.jsx`. Liste as legendas com valor
+   (dinheiro / quantidade / anos), juntando as seguidas que repetem o valor. Ignore horas, endereços e perguntas.
+   **Vários números que se relacionam (uma conta) → quadro de contas** (seção abaixo), não valores soltos.
 2. Escreva `<pasta do projeto>\animacoes\spec.json` (guarda o trabalho; mesmo formato do Remotion):
    ```json
    {"width":1080,"height":1920,"fps":60,"items":[
      {"id":"dinheiro_03","start":74.62,"dur":1.08,"anim":"impacto","lineY":1138,"glow":0.5,
       "lines":[{"text":"R$ 9","font":"digital-7","color":"#00ff00","size":200},
-               {"text":"MÍNIMO","font":"digital-7","color":"#00ff00","size":100}]}]}
+               {"text":"MÍNIMO","font":"Montserrat Bold","color":"#00ff00","size":100}]}]}
    ```
-3. Confira a trilha de destino (padrão V3, `trackIndex:2`): liste os clipes; se houver algo do usuário no trecho,
-   use a de cima.
+3. Confira a trilha de destino: liste os clipes das trilhas de vídeo. V3/V4 costumam ter imagens do usuário (logos,
+   produtos); use a primeira trilha **vazia no trecho** acima delas (já foi V3 e V5). Sequência 4K: depois de
+   colocar, Movimento > Escala 200 em cada clipe (linha da legenda fica em y 2276).
 4. Coloque e preencha (Valor = linha 1, Rótulo = linha 2; contador/roleta animam o número do próprio Valor):
    `var ARGS={trackIndex:2, items:[{mogrt:"<$SK>/mogrt/Dinheiro - Impacto.mogrt", start:74.62, dur:1.08, valor:"R$ 9", rotulo:"MÍNIMO"}]}; $.evalFile("<$SK>/scripts/place_mogrt.jsx");`
    Confira no retorno que `valor`/`rotulo` voltaram com o texto certo e que início/fim batem.
@@ -131,8 +135,6 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   `legendas-entrevista/scripts/remap.mjs` (casa pela mídia original, pelo NOME do arquivo). Converta só o spec.
 - Texto de MOGRT do AE no Premiere é um JSON; ao trocar `textEditValue`, ajuste `fontTextRunLength` para o tamanho do
   texto novo (o `place_mogrt.jsx` já faz).
-- V3/V4 costumam ter as imagens do usuário (logos de lojas, produtos): coloque as animações na primeira trilha vazia
-  acima delas (aqui V5).
 - Dois servidores do MCP do Premiere (duas sessões do Claude abertas): só um fica com a porta 8097 e o painel
   conecta nele. Veja quem escuta a porta (`Get-NetTCPConnection -LocalPort 8097`) antes de culpar o painel.
 - After Effects por script: `exportAsMotionGraphicsTemplate(overwrite, PASTA)` (o 2º argumento é a pasta; o nome vem
@@ -144,8 +146,8 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   300). Ordem dos campos no Premiere = inversa da ordem de `addToMotionGraphicsTemplateAs`. Nomes de efeito usados em
   expressão ficam sem acento (`CorValor`, `Espacamento`); o nome com acento vai só no EGP.
 - Texto que muda a cada quadro (contador, roleta) fica com fantasmas com motion blur: o valor desses templates vai
-  sem blur. Velocidade entra no tempo de TODAS as expressões (`t=(time-inPoint)*V/100-atraso`), inclusive na
-  semente do embaralhamento.
+  sem blur. Velocidade entra no tempo de TODAS as expressões (`t=(time-inPoint)*V/30-atraso`, `SPEED_NORMAL`),
+  inclusive na semente do embaralhamento.
 - Expressões de Source Text: `value` é o texto digitado no Premiere (`value.text`); em outra propriedade use
   `text.sourceText.value`. Âncora pelo `sourceRectAtTime` do texto FINAL (fim da comp), senão treme enquanto conta.
 - Cor só no preenchimento: animador de texto "Fill Color" com expressão (o efeito Preencher pintaria o contorno).

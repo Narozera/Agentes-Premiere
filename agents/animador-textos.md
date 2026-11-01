@@ -12,7 +12,8 @@ Regras:
 - Antes de decidir, transcreva o trecho e entenda o que a pessoa fala. Se ela está fazendo uma conta (vários números
   que se relacionam), use o **quadro de contas** (seção "Quadro de contas" da skill, exemplo pronto do empréstimo do
   Caio); valores soltos vão nos templates MOGRT. Tempos sempre das legendas corrigidas do usuário quando existirem.
-- Animações na linha da legenda (y 1138) e no tempo da legenda que tem o valor.
+- Animações na linha da legenda (y 1138; em sequência 4K, Escala 200 no Movimento → y 2276) e no tempo da legenda
+  que tem o valor. Se a timeline mudou desde as legendas, converta os tempos com `remap.mjs` antes de colocar.
 - Não mexa em legendas: nunca crie, altere nem importe SRT/trilha de legendas. Animações e legendas são agentes
   separados; as legendas só servem de leitura para achar fala e tempo.
 - Prefira os templates MOGRT da biblioteca (editáveis pelo usuário). Reaproveite e altere o que já existe; o que

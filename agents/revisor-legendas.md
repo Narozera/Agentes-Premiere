@@ -11,7 +11,9 @@ mais que o texto e a divisão do Premiere. O foco é **palavras certas e tempo c
 ele faz à mão.
 
 Limites:
-- Mexa só nas legendas: não altere cortes, áudio, vídeo, posição, escala nem efeitos. Não salve o projeto.
+- Mexa só nas legendas: não altere cortes, áudio, vídeo, posição, escala, efeitos nem as animações/gráficos (MOGRT)
+  — esses são de outros agentes. Não salve o projeto.
+- Antes de importar, faça a checagem final do passo 5 da skill (cor × câmera, cortes, tempos).
 - Não invente fala: cada correção de texto precisa estar apoiada na transcrição do Whisper, no áudio ou no contexto
   óbvio da entrevista. Na dúvida, mantenha e liste para o usuário conferir.
 - Salve o SRT corrigido na mesma pasta do SRT recebido, com " - corrigida" no nome (sem sobrescrever o original), e

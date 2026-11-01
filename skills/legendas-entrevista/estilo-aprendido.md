@@ -20,8 +20,13 @@ Confiança cresce a cada vídeo novo. **Leia também `glossario.md`** (nomes e t
 | Médico + Pinfer | mesmo texto + regra da troca de câmera | 94,1% | 80,4% | **83,0%** |
 | Médico + Pinfer | agente com SRT + Whisper large-v3 + regras novas* | **97,0%** | **86,1%** | **83,2%** |
 | Médico + Pinfer | agente com a transcrição JSON (sem SRT)* | 97,2% | 66,3% ⚠ | 47% (tempo do JSON) |
+| Médico + Pinfer | **às cegas, skill revisada (01/11/2026)*** | 96,6% | **86,8%** | **84,0%** |
+| MACHADO | **às cegas, skill revisada (01/11/2026)*** | **97,6%** | 85,9% | **81,9%** |
+| Mãe Vitin | Premiere | 87,0% | 76,1% | 34,3% ⚠ |
+| Mãe Vitin | **às cegas, skill revisada (01/11/2026)*** | **95,9%** | **79,3%** | 60,9% ⚠ |
 
 * regras e glossário já tinham aprendido com este vídeo → valores otimistas; a comparação SRT × JSON é justa.
+⚠ Mãe Vitin: sem `dump-agora.json` (o usuário mexeu nos cortes depois de exportar), o tempo não vale como medida.
 
 **SRT x transcrição JSON do Premiere (teste de 30/10/2026, Médico + Pinfer):** use o **SRT das legendas** como base.
 O JSON traz o tempo de cada palavra e quem fala, mas sem a divisão em legendas o agente dividiu mal (66% x 86%), e o

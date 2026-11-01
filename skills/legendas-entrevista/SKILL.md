@@ -1,13 +1,15 @@
 ---
 name: legendas-entrevista
-description: Revisa legendas de entrevista exportadas do Premiere Pro (SRT) — transcreve o áudio da timeline com Whisper, corrige o texto, pinta cada legenda pela câmera no ar (entrevistador/DJI amarelo, entrevistado/iPhone branco), ajusta o tempo e importa de volta como trilha de legendas. Use quando o usuário mandar um SRT do Premiere para corrigir/arrumar/colorir/sincronizar, ou pedir para transcrever o vídeo. Também aprende o estilo do usuário: quando ele mandar a legenda que corrigiu ("aprende com essa"), compara com a do Premiere/agente e atualiza estilo-aprendido.md.
+description: Revisa legendas de entrevista exportadas do Premiere Pro (SRT) — transcreve o áudio da timeline com Whisper, corrige o texto, pinta cada legenda pela câmera no ar (entrevistador/DJI amarelo, entrevistado/iPhone branco), ajusta o tempo e importa de volta como trilha de legendas. Use sempre que o usuário mandar um SRT do Premiere para corrigir/arrumar/colorir/sincronizar, pedir para "fazer as legendas", legendar, transcrever o vídeo ou a entrevista, mesmo sem citar SRT. Também aprende o estilo do usuário: quando ele mandar a legenda que corrigiu ("aprende com essa"), compara com a do Premiere/agente e atualiza estilo-aprendido.md. Não serve para animações de texto/valores (skill animacoes-texto) nem para posição da câmera.
 ---
 
 # Legendas de entrevista (SRT do Premiere)
 
 Ferramentas: MCP `premiere-pro` (`execute_extendscript`, `import_captions`), PowerShell, ffmpeg e whisper.cpp
 (em `%LOCALAPPDATA%\claude-premiere-tools`, baixados sozinhos se faltarem). Scripts em
-`~/.claude/skills/legendas-entrevista/scripts/` (abaixo, `$SK`). Pasta de trabalho: o scratchpad da sessão (`$W`).
+`~/.claude/skills/legendas-entrevista/scripts/` (abaixo, `$SK`). Pasta de trabalho (`$W`): uma pasta de caminho
+curto, ex. `%TEMP%\claude\leg-<nome>` — o scratchpad pode passar de 260 caracteres e o Whisper falha calado.
+No fim, copie `dump.json`, `words.csv`, `sent.srt` e `texto.txt` para `<pasta do projeto>\legendas-trabalho\<nome>\`.
 Script nenhum consegue ler/editar legendas já existentes no Premiere 26.5 — o caminho é exportar SRT → corrigir → importar.
 
 ## Antes de tudo: o que o usuário quer
@@ -29,7 +31,11 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
    Traz os clipes do áudio, a câmera do entrevistado, `cuts` (cortes da imagem que aparece na tela) e `overlay`
    (animações/gráficos nas trilhas acima das câmeras).
 3. **Transcrever**: `& "$SK\transcribe.ps1" -Dump "$W\dump.json" -OutDir $W` → `edit.wav` (áudio da timeline
-   editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Leia o `sent.srt`.
+   editada, em tempo de timeline), `words.csv` (palavra a palavra) e `sent.srt` (frases). Confira que `words.csv`
+   existe e leia o `sent.srt` procurando **frase repetida ou esticada por um buraco de silêncio** (o large-v3 entra
+   em laço e inventa fala depois de buracos entre entrevistas): se houver, retranscreva só aquele trecho (ver
+   "Lições aprendidas"). Antes do passo 5, troque no `words.csv` os erros fixos do Whisper pela forma do texto
+   (Braço→Brás, Story→Store), senão a palavra não alinha.
 4. **Reescrever as legendas** em `$W\texto.txt` (UTF-8): **uma legenda por linha, na ordem**, o vídeo inteiro.
    Parta do texto **e da divisão** do Premiere + transcrição + contexto e aplique `estilo-aprendido.md` e
    `glossario.md`: palavras como foram faladas (na dúvida `tô`/`tá`/`pra`), algarismos, `R$15 mil`, nomes inteiros.
@@ -46,6 +52,9 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
    do mesmo take na tela) é dividida no corte (**DIVIDIDAS NO CORTE**); cortes do V1 escondidos embaixo da câmera 2 não contam — por isso o `camTrack` do dump precisa ser a câmera do entrevistado. A saída lista cada legenda (falante, início antigo → novo) e os **CORTES SEM
    LEGENDA NOVA**: em cada um, divida a linha do `texto.txt` ali (se fizer sentido) e rode de novo. Em entrevista,
    confira as perguntas do entrevistador: devem estar como `other`.
+   **Checagem final antes de importar** (sempre): para cada legenda, a câmera no meio dela (`dump.cam`) bate com a
+   cor; nenhuma atravessa `dump.cuts`; fim > início; inícios em ordem, sem sobreposição; legendas de 1 palavra
+   (respostas curtas) com a cor do falante certo. Corrija à mão o que falhar, com as palavras do Whisper.
 6. **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`
    (se falhar, use a ferramenta `import_captions` + `createCaptionTrack`). Uma trilha nova é criada; a antiga continua lá.
 7. Relate: o que mudou no texto (exemplos antes/depois e o que foi redividido), quais ficaram para conferir, que é
@@ -83,15 +92,28 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
 
 
 ## Lições aprendidas
+- **Teste às cegas de 01/11/2026 (MACHADO, Médico + Pinfer, Mãe Vitin)** — os 3 agentes acharam sozinhos:
+  - **1ª palavra trocada atrasa a legenda** (o maior): no `-Texto`, o início vem da 1ª palavra que casa com o
+    Premiere; se você trocou a 1ª (está→tá, para→pra, quatro→4, Vou→Vamos) ela não casa e o início vem da 2ª —
+    0,15–1 s atrasado (~20 linhas no MACHADO). Trocar no `words.csv` não basta: o lado do Premiere não é
+    normalizado. Contorno que funcionou: rodar com uma cópia do SRT do Premiere com as mesmas trocas
+    (`premiere-norm.srt`). Na checagem final, compare o início de cada linha com a 1ª palavra no Whisper.
+  - **Snap para o corte errado**: ele leva o início ao corte mais próximo mesmo quando o corte é da legenda vizinha
+    (troca de falante) ou é o início de um gráfico (a legenda vira TIRADA). Confira as TIRADAS e os inícios que
+    mudaram mais de 0,15 s.
+  - **Dump antigo sem `cam`/`cuts`** (projetos de antes de 30/10): o `captions.ps1` pinta tudo de uma cor. Pinte
+    pelo falante (perguntas amarelas) e confira que cada troca de falante cai num corte.
+  - **Cortes de 0,03–0,3 s** (detecção de cena) geram divisões como "O | Estado": ignore corte a < 0,1 s de outro e
+    trecho < 0,3 s.
+  - Linha que o Premiere não tem (fala que ele pulou) sai com tempo errado (até 10 ms): tempo pelo Whisper.
 - As marcações de tempo do Whisper variam entre rodadas e às vezes erram ~1 s (ex.: "para nascer"); por isso o
   limite de 0,6 s e a lista REVISAR. O volume do áudio (`edit.wav`) ajuda a decidir quem está certo.
 - A cor deve seguir o tempo real das palavras (alinhado ao Whisper), não o da legenda do Premiere, que costuma
   entrar 0,2–0,5 s atrasada — senão a última palavra de uma pergunta vira branca no corte.
 - PowerShell 5.1: variáveis não diferenciam maiúsculas (`$o` apaga `$Out`); scripts com acento em UTF-8 com BOM;
   `Select-Object -First N` num pipeline interrompe o script antes de ele gravar os arquivos.
-- **Caminho longo quebra o Whisper em silêncio**: o scratchpad pode passar de 260 caracteres; aí o `whisper-cli`
-  não acha o `edit.wav` e o `transcribe.ps1` termina sem `words.csv`/`sent.srt` (só "exit 2"). Use uma pasta curta
-  (ex.: `%TEMP%\claude\leg-<nome>`) como `$W` e confira se `words.csv` existe antes de seguir.
+- **Caminho longo quebra o Whisper em silêncio**: com o scratchpad (> 260 caracteres) o `whisper-cli` não achou o
+  `edit.wav` e o `transcribe.ps1` terminou sem `words.csv`/`sent.srt` (só "exit 2"). Por isso `$W` é uma pasta curta.
 - **Vídeo de uma pessoa só (monólogo, uma câmera)** — ex.: Caio Xavier, 9 vídeos de iPhone só em V1/A1, V2 vazia:
   não existe entrevistador. Com `camTrack:1` vazio tudo sairia amarelo. Use `camTrack:0` e, como o Whisper costuma
   jogar as primeiras palavras de cada bloco no buraco antes do clipe (viram `other`), troque `cam` do dump.json por
