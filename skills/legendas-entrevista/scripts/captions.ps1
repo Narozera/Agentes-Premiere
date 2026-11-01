@@ -33,7 +33,14 @@ public static class CapUtil {
 }
 "@
 $enc = New-Object Text.UTF8Encoding $false
-function Norm([string]$s) { $s = $s.ToLowerInvariant().Normalize([Text.NormalizationForm]::FormD); (($s.ToCharArray() | Where-Object { [Globalization.CharUnicodeInfo]::GetUnicodeCategory($_) -ne 'NonSpacingMark' }) -join '') -replace '[^a-z0-9 ]', ' ' }
+# spoken and written forms count as the same word on every side (texto.txt "tá" x Premiere/Whisper "está"), or the
+# word does not align and the caption takes its time from the next one (blind test 01/11/2026: up to 1 s late)
+$Canon = @{ esta = 'ta'; estou = 'to'; estava = 'tava'; estao = 'tao'; estamos = 'tamo'; para = 'pra'; '000' = 'mil'
+  um = '1'; uma = '1'; dois = '2'; duas = '2'; tres = '3'; quatro = '4'; cinco = '5'; seis = '6'; sete = '7'; oito = '8'; nove = '9'; dez = '10' }
+function Norm([string]$s) {
+  $s = $s.ToLowerInvariant().Normalize([Text.NormalizationForm]::FormD)
+  $s = (($s.ToCharArray() | Where-Object { [Globalization.CharUnicodeInfo]::GetUnicodeCategory($_) -ne 'NonSpacingMark' }) -join '') -replace '[^a-z0-9 ]', ' '
+  (@($s -split '\s+' | Where-Object { $_ } | ForEach-Object { if ($Canon.ContainsKey($_)) { $Canon[$_] } else { $_ } }) -join ' ') }
 function ToSec([string]$tc) { $p = $tc.Trim() -split '[:,]'; [int]$p[0] * 3600 + [int]$p[1] * 60 + [int]$p[2] + [int]$p[3] / 1000.0 }
 function Tc([double]$x) { $ms = [int][math]::Round($x * 1000); '{0:00}:{1:00}:{2:00},{3:000}' -f [int][math]::Floor($ms / 3600000), ([int][math]::Floor($ms / 60000) % 60), ([int][math]::Floor($ms / 1000) % 60), ($ms % 1000) }
 
@@ -59,9 +66,21 @@ if ($Texto) {
   $lines = @([IO.File]::ReadAllLines($Texto, $enc) | ForEach-Object { $_.Trim([char]0xFEFF, ' ', "`t") } | Where-Object { $_ })
   $nt = @(); for ($i = 0; $i -lt $lines.Count; $i++) { foreach ($tok in ((Norm $lines[$i]) -split '\s+' | Where-Object { $_ })) { $nt += [pscustomobject]@{ tok = $tok; cap = $i } } }
   $pa = [CapUtil]::Align([string[]]@($nt | ForEach-Object tok), [string[]]@($pt | ForEach-Object tok))
-  $s0 = @{}; $e0 = @{}
+  $s0 = @{}; $e0 = @{}; $used = @{}; foreach ($x in $pa) { if ($x -ge 0) { $used[$x] = $true } }
   # the user's captions come in 0-3 frames before Premiere's; $Lead = 1 frame scored best over 3 videos
-  for ($k = 0; $k -lt $nt.Count; $k++) { if ($pa[$k] -ge 0) { $ci = $nt[$k].cap; if (-not $s0.ContainsKey($ci)) { $s0[$ci] = [math]::Max(0.0, $pt[$pa[$k]].s - $Lead) }; $e0[$ci] = $pt[$pa[$k]].e } }
+  for ($k = 0; $k -lt $nt.Count; $k++) {
+    if ($pa[$k] -lt 0) { continue }
+    $ci = $nt[$k].cap; $p = $pa[$k]
+    if (-not $s0.ContainsKey($ci)) {
+      # the line's first words did not match (changed word): if the same number of Premiere words right before the
+      # match is unmatched too, those are the words that were replaced, and the line starts on the first of them
+      $j = 0; while ($k - $j - 1 -ge 0 -and $nt[$k - $j - 1].cap -eq $ci) { $j++ }
+      $q = $p - $j; $ok = $j -gt 0 -and $q -ge 0; for ($x = $q; $ok -and $x -lt $p; $x++) { if ($used.ContainsKey($x)) { $ok = $false } }
+      $s0[$ci] = [math]::Max(0.0, $(if ($ok) { $pt[$q].s } else { $pt[$p].s }) - $Lead)
+    }
+    $e0[$ci] = $pt[$p].e
+  }
+  $noPrem = @(0..($lines.Count - 1) | Where-Object { -not $s0.ContainsKey($_) })
   $caps = @(); $cursor = 0.0
   for ($i = 0; $i -lt $lines.Count; $i++) {
     # a line with no word in common with Premiere (e.g. "Sinal 1" x "Se naum") starts where the previous one ends
@@ -81,6 +100,17 @@ $ct = @(); for ($i = 0; $i -lt $caps.Count; $i++) { foreach ($tok in ((Norm $cap
 $al = [CapUtil]::Align([string[]]@($ct | ForEach-Object tok), [string[]]@($wt | ForEach-Object tok))
 $first = @{}; $last = @{}
 for ($k = 0; $k -lt $ct.Count; $k++) { if ($al[$k] -ge 0) { $ci = $ct[$k].cap; $w = $wt[$al[$k]]; if (-not $first.ContainsKey($ci)) { $first[$ci] = $w.s }; $last[$ci] = $w.e } }
+# a texto.txt line Premiere never heard (no word in common) only got a placeholder time: use Whisper's
+$fromWhisper = @()
+if ($Texto) {
+  foreach ($i in $noPrem) {
+    if (-not $first.ContainsKey($i)) { continue }
+    $prevS = if ($i -gt 0) { $caps[$i - 1].s + 0.1 } else { 0.0 }; $nextS = if ($i + 1 -lt $caps.Count) { $caps[$i + 1].s } else { [double]::MaxValue }
+    $ns = [math]::Max($prevS, $first[$i] - $Lead); if ($ns -ge $nextS - 0.1) { continue }
+    $caps[$i].s = $ns; $caps[$i].e = [math]::Min($nextS, [math]::Max($last[$i] + 0.2, $ns + 0.3)); $fromWhisper += $i + 1
+    if ($i -gt 0 -and $caps[$i - 1].e -gt $ns) { $caps[$i - 1].e = $ns }
+  }
+}
 
 # --- speaker by camera: >= 50% of the spoken words (or of the caption, if unaligned) under the interviewee camera
 for ($i = 0; $i -lt $caps.Count; $i++) {
@@ -134,12 +164,22 @@ else {
   $visCuts = @(@($dump.audio | ForEach-Object { [double]$_.start } | Where-Object { -not (& $hid $_) }) + @($camR | ForEach-Object { [double]$_[0]; [double]$_[1] }) |
     ForEach-Object { [math]::Round($_, 3) } | Where-Object $inRange | Sort-Object -Unique)
 }
+if (-not @($dump.cam).Count) { Write-Warning "dump.json sem 'cam' (dump antigo): todas as legendas saem da mesma cor - pinte pelo falante" }
+# scene detection leaves clusters of cuts 0.03-0.3 s apart (flash frames): only the first of a cluster is a real cut
+$kept = @(); foreach ($t in $visCuts) { if (-not $kept.Count -or $t - $kept[$kept.Count - 1] -ge 0.3) { $kept += $t } }; $visCuts = $kept
+$inOverlay = { param($x) foreach ($o in @($dump.overlay)) { if ($null -ne $o -and $x -ge [double]$o[0] - 0.1 -and $x -lt [double]$o[1] - 0.1) { return $true } }; $false }
 if ($Snap -gt 0) {
-  # snap the nearest start onto each cut; a start already on a cut stays there
+  # snap the nearest start onto each cut; a start already on a cut stays there. Not when that would move a caption
+  # later than its first word (Whisper heard it before the cut: it belongs to the previous shot) or into a graphic
+  # (the caption would then be dropped as "under an animation")
   $locked = @{}
   foreach ($t in $visCuts) {
     $best = -1; $bd = $Snap
-    for ($i = 0; $i -lt $caps.Count; $i++) { if ($locked.ContainsKey($i)) { continue }; $dd = [math]::Abs($caps[$i].s - $t); if ($dd -le $bd) { $bd = $dd; $best = $i } }
+    for ($i = 0; $i -lt $caps.Count; $i++) {
+      if ($locked.ContainsKey($i)) { continue }; $dd = [math]::Abs($caps[$i].s - $t); if ($dd -gt $bd) { continue }
+      if ($t -gt $caps[$i].s -and $first.ContainsKey($i) -and $first[$i] -lt $t - 0.1) { continue }
+      if ((& $inOverlay $t) -and -not (& $inOverlay $caps[$i].s)) { continue }
+      $bd = $dd; $best = $i }
     if ($best -lt 0) { continue }
     $c = $caps[$best]
     if ($best -gt 0 -and [math]::Abs($caps[$best - 1].e - $c.s) -lt 0.02) { $caps[$best - 1].e = $t }
@@ -148,6 +188,8 @@ if ($Snap -gt 0) {
     $locked[$best] = $true
   }
 }
+# starts far from where Whisper heard the first word: for the agent to check (Whisper itself can be ~1 s off)
+$offStart = @(for ($i = 0; $i -lt $caps.Count; $i++) { if ($first.ContainsKey($i) -and [math]::Abs($caps[$i].s - ($first[$i] - $Lead)) -gt 0.5) { "$($caps[$i].text) ($(Tc $caps[$i].s) x $(Tc $first[$i]))" } })
 
 # --- a caption never crosses a visible cut (at a camera switch it would mix the two speakers): split it there, putting
 # each word on the side where Whisper heard it (no Whisper time: by its position in the caption)
@@ -216,3 +258,5 @@ if ($camSplit) { "DIVIDIDAS NO CORTE (troca de camera ou corte visivel): $camSpl
 if ($dropped.Count) { "TIRADAS (embaixo de animacao/grafico): " + ($dropped -join ' | ') }
 if ($lonely.Count) { "CORTES SEM LEGENDA NOVA (divida o texto ali se fizer sentido): " + (($lonely | ForEach-Object { Tc $_ }) -join ', ') }
 if ($flagged.Count) { "REVISAR (tempo do Whisper muito diferente do Premiere, mantido o original): " + ($flagged -join ', ') }
+if ($fromWhisper.Count) { "TEMPO DO WHISPER (linhas que o Premiere nao tem): " + ($fromWhisper -join ', ') }
+if ($offStart.Count) { "INICIO x WHISPER (> 0,5 s, confira): " + ($offStart -join ' | ') }

@@ -92,20 +92,19 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
 
 
 ## Lições aprendidas
-- **Teste às cegas de 01/11/2026 (MACHADO, Médico + Pinfer, Mãe Vitin)** — os 3 agentes acharam sozinhos:
-  - **1ª palavra trocada atrasa a legenda** (o maior): no `-Texto`, o início vem da 1ª palavra que casa com o
-    Premiere; se você trocou a 1ª (está→tá, para→pra, quatro→4, Vou→Vamos) ela não casa e o início vem da 2ª —
-    0,15–1 s atrasado (~20 linhas no MACHADO). Trocar no `words.csv` não basta: o lado do Premiere não é
-    normalizado. Contorno que funcionou: rodar com uma cópia do SRT do Premiere com as mesmas trocas
-    (`premiere-norm.srt`). Na checagem final, compare o início de cada linha com a 1ª palavra no Whisper.
-  - **Snap para o corte errado**: ele leva o início ao corte mais próximo mesmo quando o corte é da legenda vizinha
-    (troca de falante) ou é o início de um gráfico (a legenda vira TIRADA). Confira as TIRADAS e os inícios que
-    mudaram mais de 0,15 s.
-  - **Dump antigo sem `cam`/`cuts`** (projetos de antes de 30/10): o `captions.ps1` pinta tudo de uma cor. Pinte
+- **Teste às cegas de 01/11/2026 (MACHADO, Médico + Pinfer, Mãe Vitin)** — os 3 agentes acharam os mesmos
+  defeitos no `captions.ps1`, **corrigidos no mesmo dia** (tempo só do script: MACHADO 79,9→80,9%, Médico
+  82,3→84,6%, Mãe Vitin 57,2→59,2%):
+  - 1ª palavra trocada (está→tá, para→pra, quatro→4) atrasava a legenda 0,15–1 s. Agora o `Norm` trata as formas
+    faladas e os números por extenso como a mesma palavra nos três lados, e se a 1ª ainda não casa (Vou→Vamos) o
+    início vem da palavra do Premiere que ela substituiu. Não precisa mais de `premiere-norm.srt`.
+  - O snap não leva mais um início para DEPOIS do corte se o Whisper ouviu a 1ª palavra antes dele, nem para dentro
+    de um gráfico (a legenda virava TIRADA). Cortes a < 0,3 s um do outro (detecção de cena) contam como um só.
+  - Linha que o Premiere não tem pega o tempo do Whisper (saída "TEMPO DO WHISPER").
+  - Nova saída **"INICIO x WHISPER"**: inícios a > 0,5 s da 1ª palavra no Whisper. Confira cada um (o Whisper
+    também erra, e às vezes fica ~0,4 s adiantado o vídeo todo).
+  - **Dump antigo sem `cam`/`cuts`** (projetos de antes de 30/10): o script avisa e pinta tudo de uma cor. Pinte
     pelo falante (perguntas amarelas) e confira que cada troca de falante cai num corte.
-  - **Cortes de 0,03–0,3 s** (detecção de cena) geram divisões como "O | Estado": ignore corte a < 0,1 s de outro e
-    trecho < 0,3 s.
-  - Linha que o Premiere não tem (fala que ele pulou) sai com tempo errado (até 10 ms): tempo pelo Whisper.
 - As marcações de tempo do Whisper variam entre rodadas e às vezes erram ~1 s (ex.: "para nascer"); por isso o
   limite de 0,6 s e a lista REVISAR. O volume do áudio (`edit.wav`) ajuda a decidir quem está certo.
 - A cor deve seguir o tempo real das palavras (alinhado ao Whisper), não o da legenda do Premiere, que costuma
