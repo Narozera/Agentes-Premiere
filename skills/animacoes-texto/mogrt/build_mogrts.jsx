@@ -15,7 +15,7 @@
   function say(s) { lines.push(s); log.encoding = "UTF-8"; log.open("w"); log.write(lines.join("\n")); log.close(); }
 
   var STYLES = {
-    dinheiro: {font: "Digital-7", color: [0, 1, 0], valor: "R$ 80", size: 200, labelSize: 100, prefix: "Dinheiro"},
+    dinheiro: {font: "Digital-7", labelFont: "Montserrat-Bold", color: [0, 1, 0], valor: "R$ 80", size: 200, labelSize: 80, prefix: "Dinheiro"},
     quantidade: {font: "DKLongreach-Regular", color: [1, 1, 1], valor: "146", size: 220, labelSize: 110, prefix: "Quantidade"},
     anos: {font: "DKLongreach-Regular", color: [1, 0.102, 0.102], valor: "40 ANOS", size: 220, labelSize: 110, prefix: "Anos"}
   };
@@ -67,13 +67,13 @@
     throw new Error("anim " + name);
   }
 
-  function textLayer(comp, L, txt, size) {
+  function textLayer(comp, L, txt, size, font) {
     var lay = comp.layers.addText(txt);
     lay.name = L;
     var sp = lay.property("ADBE Text Properties").property("ADBE Text Document");
     var td = sp.value;
     try { td.resetCharStyle(); td.resetParagraphStyle(); } catch (e) {}
-    td.font = st.font; td.fontSize = size; td.applyFill = true; td.fillColor = st.color;
+    td.font = font || st.font; td.fontSize = size; td.applyFill = true; td.fillColor = st.color;
     td.applyStroke = true; td.strokeColor = [0, 0, 0]; td.strokeWidth = 12; td.strokeOverFill = false;
     td.justification = ParagraphJustification.CENTER_JUSTIFY; td.tracking = 0;
     sp.setValue(td);
@@ -113,7 +113,8 @@
     tr.property("ADBE Anchor Point").setValue([0, 0]);
     tr.property("ADBE Position").setValue([540, LINE_Y]);
     tr.property("ADBE Scale").expression = 'var k=effect("Tamanho")(1);[k,k]';
-    var lab = textLayer(comp, "ROTULO", "", st.labelSize);
+    // words go in Montserrat Bold (Digital-7 has no accents and its letters read badly)
+    var lab = textLayer(comp, "ROTULO", "", st.labelSize, st.labelFont);
     var val = textLayer(comp, "VALOR", st.valor, st.size);
     // null's anchor is its own top-left: put children relative to its centre
     val.parent = ctl; lab.parent = ctl;

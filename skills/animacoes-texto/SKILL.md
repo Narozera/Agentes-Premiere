@@ -38,7 +38,9 @@ expressões; molas em `spr(t, freqHz, amortecimento)`), rode de novo (abaixo) e 
 | dinheiro | "R$ 2", "30 reais", "R$ 1.500", "mil reais" | `Digital-7` | `#00ff00` (pedido 2026-10-30: "ff00") |
 | quantidade | "146 crianças", "300 pessoas", "50 peças" | `DK Longreach` | `#ffffff` |
 | anos | "40 anos", "há 12 anos", "desde 1985" | `DK Longreach` | `#ff1a1a` |
-Contorno preto 6 px em tudo, brilho leve (LED). **Números sempre em algarismos**. Dinheiro sempre `R$ N` (com
+**Palavras (MÍNIMO, MÁXIMO, JUROS, MIL, AO MÊS, rótulos) sempre em `Montserrat Bold`** (pedido do usuário,
+2026-11-01): a Digital-7 não tem acento (Ê, Ó, Í, Á, Ç saem numa fonte de reserva com serifa) e as letras dela leem
+mal. Digital-7 só para números, R$, % e X. Contorno preto 6 px em tudo, brilho leve (LED). **Números sempre em algarismos**. Dinheiro sempre `R$ N` (com
 espaço). Rótulos (MÍNIMO, BLUSAS, ANOS) em MAIÚSCULAS. DK Longreach desenha **4, 5 e "+" como rabisco** (o
 render-motion troca a linha para `Montserrat Black`; no MOGRT evite ou use a categoria dinheiro/Montserrat).
 
@@ -96,6 +98,17 @@ significado de um campo mudou, converta: `scale:{"Velocidade":0.3}` (2026-10-30:
 um campo foi dividido/renomeado, `from:{"Cor do valor":"Cor","Cor do rótulo":"Cor"}`. Os textos são mesclados:
 ficam o texto/fonte do usuário e as opções (capProp*) do template novo.
 
+## Quadro de contas (quando a pessoa faz uma conta)
+Quando o entrevistado explica uma conta (empréstimo, juros, parcelas, lucro), o usuário quer um **quadro em tela
+cheia** com a conta sendo montada linha a linha enquanto a pessoa fala por trás (não valores soltos na legenda).
+Componente `motion/src/Quadro.jsx` (Remotion, `"comp":"Quadro"`): fundo escuro 90% com grade, título, linhas de
+dados (`info`: rótulo + valor, com contagem), tabela (`rows`: rótulo, valor que conta e barra proporcional; a última
+pode ser vermelha) e conclusão que bate (`total`). Todos os tempos em segundos desde o início do quadro, tirados das
+**legendas corrigidas do usuário** (início da legenda de cada número; quadro do início da 1ª frase da conta ao fim da
+frase que fecha). Medidas na base 1080 (escalam com a largura); deixe vazia a faixa da legenda (y 1080–1200 na base
+1080). Exemplo pronto: `D:\EDIÇÃO\Caio Xavier\29-10\9 VIDEOS\animacoes\8366\quadro.json` (simulação de empréstimo).
+Render 4K de ~43 s sem blur: ~7 min. Coloque o `.mov` com `scripts/place.jsx` numa trilha livre acima das imagens.
+
 ## Remotion (vídeo .mov)
 `& "$SK\scripts\render-motion.ps1" -Spec spec.json -OutDir "<pasta do projeto>\animacoes"` (instala/atualiza o
 projeto `motion/` sozinho; ~15–20 s por item) e **olhe o `preview.png`** (linha vermelha = `lineY`). Coloque com
@@ -107,6 +120,9 @@ animação, use o **início atual** do clipe antigo (o usuário costuma ajustar 
 remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
 
 ## Lições aprendidas
+- Sequência 4K com template 1080 (MOGRT): Movimento > Escala 200 mantém tudo na linha da legenda (y 2276).
+- Transcrever só um trecho: desloque o `dump.json` para começar em 0 (`offset` = menor início) — com centenas de
+  segundos de silêncio antes, o Whisper alucina ("Legenda por Sônia Ruberti") e o `adelay` não aceita negativo.
 - **Nunca exporte frame do Premiere (`export_frame` / QE `exportFramePNG`) com MOGRT na sequência**: travou o
   Premiere em loop (2026-10-30, teve de ser fechado à força). Confira os templates pelo `aerender` e o texto pelo
   retorno do `place_mogrt.jsx`.

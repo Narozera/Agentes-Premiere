@@ -21,11 +21,13 @@ fs.mkdirSync(path.join(outDir, 'tmp'), {recursive: true});
 const serveUrl = await bundle({entryPoint: path.join(here, 'src', 'index.jsx'), publicDir: path.join(here, 'public')});
 for (const item of spec.items) {
   if (only && !only.includes(item.id)) continue;
-  // a count-up changes digits every frame: averaging sub-frames turns them into ghosts, so no blur by default
-  const blur = (item.blur ?? spec.blur ?? (item.lines.some((l) => l.count) ? 0 : 1)) > 0;
+  // a count-up changes digits every frame: averaging sub-frames turns them into ghosts, so no blur by default;
+  // a Quadro is long (tens of seconds): no blur either (6x the frames)
+  const comp = item.comp ?? 'Texto';
+  const blur = (item.blur ?? spec.blur ?? (comp !== 'Texto' || (item.lines ?? []).some((l) => l.count) ? 0 : 1)) > 0;
   const sub = blur ? SUB : 1;
   const inputProps = {...item, width: spec.width, height: spec.height, fps: spec.fps * sub, fonts: spec.fonts ?? []};
-  const composition = await selectComposition({serveUrl, id: 'Texto', inputProps});
+  const composition = await selectComposition({serveUrl, id: comp, inputProps});
   const tmp = path.join(outDir, 'tmp', `${item.id}.mov`);
   const t0 = Date.now();
   await renderMedia({

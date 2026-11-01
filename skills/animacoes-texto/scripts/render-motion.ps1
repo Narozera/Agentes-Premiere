@@ -36,7 +36,10 @@ function Resolve-Font([string]$name) {
 $cfg = Read-Job $Spec   # not $spec: same variable as the [string] param
 $fonts = @{}; $report = @()
 foreach ($it in $cfg.items) {
-  foreach ($ln in $it.lines) {
+  # a Quadro has no lines: its fonts come in "useFonts"
+  foreach ($uf in @($it.useFonts)) { if ($uf -and -not $fonts.ContainsKey([string]$uf)) { $file = Resolve-Font $uf; $name = [IO.Path]::GetFileName($file); Copy-Item -LiteralPath $file "$dst\public\fonts\$name" -Force; $fonts[[string]$uf] = $name } }
+  foreach ($ln in @($it.lines)) {
+    if (-not $ln) { continue }
     $all = [string]$ln.text + [string]$ln.count.prefix + [string]$ln.count.to + [string]$ln.count.suffix
     if ([string]$ln.font -match 'longreach' -and $all -match '[45]') {
       # DK Longreach draws 4 and 5 as a scribble
