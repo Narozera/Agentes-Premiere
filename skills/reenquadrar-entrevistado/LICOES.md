@@ -68,3 +68,10 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
 - **Sony 4K em pé (2160×3840) a 100 numa sequência 4K com referência em 139**: com réguas x=1080, y=700 a escala mínima
   sem borda deu 111-132 (subir a cabeça até a régua e centralizar exige zoom); `"maxZoom": 139` não chegou a atuar.
   Medição: folha grosseira (4 por linha) + 1 rodada de `xcrop -Half 600` em todos os clipes bastou (verificação sem correção).
+- **ERIC "4 VIDEOS_"** (2026-11-02, seq 4K, V2 com 159 clipes de 4 entrevistadas, Sony 4K em pé, proxies 540×960): o 1º
+  clipe de cada vídeo (0, 22, 72, 111) estava enquadrado à mão (escala 138/135/129/125, 4-5 keys) e o resto em 100 no
+  centro. Réguas lidas do quadro de saída das referências: x≈1065, y≈650 (iguais nos 4). Com `maxZoom` = 100 nada mudaria;
+  usado `maxZoom` = escala da referência: escalas finais 117-138, 33 clipes presos na borda (rosto perto da lateral da
+  fonte). Estimativa automática por NCC com o template da referência + xcrop em folhas de 12 mediu os 159 em ~15 min
+  (7 clipes com estimativa errada, achados no xcrop). Correções manuais: 65 (mão no rosto, headY do
+  rastreador +110), 153 (score 0,42, câmera mexendo), 137 (perfil, fim com score 0,46).

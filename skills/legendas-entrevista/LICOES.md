@@ -55,6 +55,12 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
   do corte e `no seu` antes de outro; os dois eram depois). Transcrever **cada clipe do áudio sozinho**
   (`ffmpeg -ss <start> -to <end>` do `dump.audio`, `whisper-cli -mc 0 -nt`) mostra exatamente que palavras ficam em
   cada clipe. Use nos cortes onde Premiere e Whisper discordam e divida a linha no corte (`mesmo de | honrar`).
+- **Emendas de 30 s do Whisper** (ERIC "4 VIDEOS", 02/11/2026): o `words.csv` perdeu `Eu falo que hoje eu tô na minha
+  melhor fase a fase do amor próprio` (327,5–330 s, a fala que o Premiere tinha) e repetiu `Exatamente` (179,7/180,0) e
+  `um valor. Tem um valor` (209–210) — todos encostados em múltiplos de 30 s. Trechos de 2–8 s com `-mc 0` resolveram.
+  No mesmo vídeo o Whisper do arquivo inteiro ficou 0,5–1 s adiantado no 4º bloco (lista INICIO x WHISPER com ~45
+  itens); os trechos curtos confirmaram o tempo do Premiere. Cada resposta tinha clipe próprio na câmera 2, então a cor
+  por câmera bateu com o falante; exceção: `Sim` dele fora de quadro com a câmera 2 no ar (f0 104 Hz).
 - **Quem fala, com câmera 1 em plano aberto**: altura da voz (f0 mediana por trecho, autocorrelação em Node sobre o
   `edit.wav`; sem Python na máquina). ERIC: homem 110–140 Hz, mulher 220–260 Hz — resolveu `Aí ó tá vendo` (dela, na
   câmera 2) e `Então tá faltando um homem de verdade` (dele). Script: `legendas-trabalho\video-urgente\` (pitch.mjs).

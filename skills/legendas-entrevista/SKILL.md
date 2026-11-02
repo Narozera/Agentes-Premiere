@@ -104,6 +104,8 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
     do bloco pelo buraco inteiro → olhe o `sent.srt`; corte do `edit.wav` só o começo do bloco (8–12 s) e transcreva
     com `-mc 0`, somando o início aos tempos; tire do `words.csv` palavras onde não há clipe no `dump.audio`;
   - as marcas de tempo variam entre rodadas e às vezes erram ~1 s (por isso o limite de 0,6 s e a lista REVISAR);
+  - nas emendas das janelas de 30 s (30, 60, 90... s do `edit.wav`) ele pula fala ou repete palavra: compare o
+    Premiere com o Whisper perto desses tempos e retranscreva o trecho com `-mc 0`;
   - palavra escrita diferente do `texto.txt` não alinha (Braço × Brás; números por extenso e `está/tá` o `captions.ps1`
     já iguala) → troque no `words.csv` (guarde `words-orig.csv`);
   - palavra de um lado ou do outro de um jump cut: transcreva **cada clipe do áudio sozinho** (`ffmpeg -ss -to` do

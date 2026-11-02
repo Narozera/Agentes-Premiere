@@ -121,6 +121,11 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
   strings antigas × novas. Só o out-point mudou: corte os keys depois da nova duração. `exp` grande: grave num arquivo
   e leia com `eval("(" + f.read() + ")")`.
 - **Sequência 4K (2160×3840)**: réguas e `seqW/seqH` em pixels 4K (padrão x=1080, y=768); o `dump_clips` diz o tamanho.
+- **Só posição com clipes em 100 numa fonte sem margem** (Sony 4K em sequência 4K): `"maxZoom"` = escala atual (100)
+  deixa tudo parado no centro. Use `"maxZoom"` = escala do clipe que o usuário enquadrou naquele vídeo e relate as escalas.
+- **Muitos clipes (150+)**: estime o meio de todos por NCC com o template do rosto da referência de cada vídeo (mesma
+  conta do track.ps1, busca no quadro inteiro) e confira tudo com `xcrop` em folhas de 12; só os que errarem vão à folha
+  grosseira. Mão no rosto puxa o `headY` do rastreador ~100 px para baixo: `manual` com pontos a cada 0,3–0,4 s.
 - **`execute_extendscript`** muda entre versões da ponte: termine com a expressão (`...; $.evalFile("...");`), e se
   falhar use `return`. `in` como chave de objeto (`{in: 1}`) quebra o script — use `inp`. Ponte "não está rodando" com
   o Premiere aberto: veja `%TEMP%\premiere-mcp-bridge\bridge-heartbeat.json`; se parou, peça para fechar diálogos e
