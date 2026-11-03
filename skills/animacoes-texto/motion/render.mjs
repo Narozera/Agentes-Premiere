@@ -4,6 +4,7 @@
 //  - holds the last frame so the media is `hold` seconds long (the user drags the clip end out in Premiere).
 // Usage: node render.mjs <spec.json> <outDir> <ffmpeg.exe> <hold seconds>   (called by scripts/render-motion.ps1)
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
@@ -33,6 +34,10 @@ for (const item of spec.items) {
   await renderMedia({
     composition, serveUrl, inputProps, outputLocation: tmp,
     codec: 'prores', proResProfile: '4444', pixelFormat: 'yuva444p10le', imageFormat: 'png', logLevel: 'error',
+    // draw the frames on the GPU (ANGLE = Direct3D on Windows; RX 6800 XT) instead of Chrome's software renderer;
+    // GL=swangle forces the old CPU path if a driver ever breaks it
+    chromiumOptions: {gl: process.env.GL || 'angle'},
+    concurrency: Number(process.env.CONCURRENCY) || Math.max(1, Math.round(os.cpus().length * 0.75)),
   });
   const animDur = composition.durationInFrames / composition.fps;
   const vf = [];

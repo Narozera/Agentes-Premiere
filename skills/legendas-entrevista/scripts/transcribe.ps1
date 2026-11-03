@@ -1,6 +1,7 @@
 ﻿param([Parameter(Mandatory)][string]$Dump, [Parameter(Mandatory)][string]$OutDir, [string]$Lang = 'pt',
   # large-v3 (full) made 24% fewer word errors than turbo over 4 videos (94.9% x 92.7%); turbo is ~4x faster
-  [ValidateSet('large-v3', 'turbo')][string]$Model = 'large-v3')
+  [ValidateSet('large-v3', 'turbo')][string]$Model = 'large-v3',
+  [switch]$Cpu)                              # force the CPU build (the GPU one is used when it exists)
 # Rebuilds the sequence's dialogue audio exactly as edited (from dump.json) and transcribes it with Whisper.
 # Outputs in OutDir: edit.wav (16 kHz mono, timeline time), words.csv (word timestamps, ms), sent.srt (sentences).
 . "$PSScriptRoot\..\..\reenquadrar-entrevistado\scripts\common.ps1"
@@ -16,6 +17,11 @@ if (-not (Test-Path $cli)) {
   Expand-Archive "$wdir\w.zip" -DestinationPath "$wdir\x" -Force; Copy-Item "$wdir\x\Release\*" $wdir -Force; Remove-Item -Recurse -Force "$wdir\x", "$wdir\w.zip"
 }
 if (-not (Test-Path $modelPath)) { $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$file" -OutFile "$modelPath.part"; Move-Item "$modelPath.part" $modelPath }
+# GPU build (whisper.cpp compiled with Vulkan, RX 6800 XT): same words and timestamps as the CPU one, ~3x faster.
+# There is no prebuilt Vulkan release for Windows; it was compiled from source (see SKILL.md, "GPU")
+$gpuCli = Join-Path $env:LOCALAPPDATA 'claude-premiere-tools\whisper-gpu\whisper-cli.exe'
+$useGpu = -not $Cpu -and (Test-Path $gpuCli)
+if ($useGpu) { $cli = $gpuCli; $threads = 8 }
 
 $d = Read-Job $Dump
 # one ffmpeg input per distinct media; each clip trimmed and delayed to its timeline start, then mixed
@@ -31,6 +37,12 @@ foreach ($c in $d.audio) {
 $fc = ($parts -join ';') + ";${labels}amix=inputs=${n}:normalize=0:duration=longest[out]"
 [IO.File]::WriteAllText("$OutDir\fc.txt", $fc)
 & $ff -v error -y @inputs '-/filter_complex' "$OutDir\fc.txt" -map '[out]' -ac 1 -ar 16000 -c:a pcm_s16le "$OutDir\edit.wav"
+$sw = [Diagnostics.Stopwatch]::StartNew()
 & $cli -m $modelPath -f "$OutDir\edit.wav" -l $Lang -ml 1 -sow -ocsv -of "$OutDir\words" -t $threads -dtw $dtw 2>$null | Out-Null
+if ($useGpu -and -not (Test-Path "$OutDir\words.csv")) {
+  # a driver problem must not stop the job: fall back to the CPU build
+  Write-Warning "Whisper na GPU falhou; usando a CPU"; $useGpu = $false; $cli = Join-Path $wdir 'whisper-cli.exe'; $threads = [math]::Min([Environment]::ProcessorCount, 16)
+  & $cli -m $modelPath -f "$OutDir\edit.wav" -l $Lang -ml 1 -sow -ocsv -of "$OutDir\words" -t $threads -dtw $dtw 2>$null | Out-Null
+}
 & $cli -m $modelPath -f "$OutDir\edit.wav" -l $Lang -osrt -of "$OutDir\sent" -t $threads 2>$null | Out-Null
-"audio: $n clips -> edit.wav; transcript ($Model): words.csv, sent.srt"
+"audio: $n clips -> edit.wav; transcript ($Model, $(if ($useGpu) { 'GPU' } else { 'CPU' }), $([int]$sw.Elapsed.TotalSeconds) s): words.csv, sent.srt"

@@ -121,8 +121,11 @@ Render 4K de ~43 s sem blur: ~7 min. Coloque o `.mov` com `scripts/place.jsx` nu
 
 ## Remotion (vídeo .mov)
 `& "$SK\scripts\render-motion.ps1" -Spec spec.json -OutDir "<pasta do projeto>\animacoes"` (instala/atualiza o
-projeto `motion/` sozinho; ~15–20 s por item) e **olhe o `preview.png`** (linha vermelha = `lineY`). Coloque com
+projeto `motion/` sozinho; ~15–20 s por item em 1080) e **olhe o `preview.png`** (linha vermelha = `lineY`). Coloque com
 `scripts/place.jsx` (`{trackIndex, bin, items:[{file, start, dur}]}`, exemplo na seção do quadro).
+O Chrome do Remotion desenha na **GPU** (`gl: 'angle'`, padrão do `render.mjs`): item 4K com blur em 34 s × 94 s na
+CPU, imagem igual. `$env:GL='swangle'` volta para a CPU se um driver quebrar; `$env:CONCURRENCY` muda o nº de quadros
+em paralelo (padrão 75% dos núcleos).
 
 ## Refazer/substituir uma animação já colocada
 MOGRT: só trocar Valor/Rótulo/Cor no Controle de efeitos (ou `place_mogrt.jsx` de novo). Para trocar o TIPO de

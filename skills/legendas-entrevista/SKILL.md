@@ -97,6 +97,18 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
    Com os cortes, escreva um `dump.json` (`audio`: um trecho entre cada par de cortes) e rode o `aprender.mjs` sem
    `--premiere`. Não abra outro projeto no Premiere sem o usuário pedir: o que estiver aberto pode ter alteração não salva.
 
+## GPU (Whisper na RX 6800 XT)
+- `%LOCALAPPDATA%\claude-premiere-tools\whisper-gpu\whisper-cli.exe` é o whisper.cpp v1.9.5 compilado com **Vulkan**
+  (não existe versão pronta para AMD no Windows). Mesmas palavras e mesmos tempos da CPU, ao milissegundo, ~3× mais
+  rápido (60 s de áudio: 9,7 s × 29,6 s). O `transcribe.ps1` usa a GPU sozinho e volta para a CPU se ela falhar
+  (`-Cpu` força a CPU). **Para retranscrever trechos** (lições abaixo), chame esse mesmo `whisper-gpu\whisper-cli.exe`
+  com `-t 8` e o modelo de `whisper\ggml-large-v3.bin`.
+- Recompilar (só se apagarem a pasta): fonte em `claude-premiere-tools\whisper-src`, CMake + VS Build Tools + Vulkan
+  SDK já instalados; `cmake -G Ninja -DGGML_VULKAN=ON -DBUILD_SHARED_LIBS=ON` dentro do `vcvars64.bat`, **no terminal
+  do app** (no shell do Claude o MSBuild/Ninja quebram) e com `-j 1` ou `-j 2`: o i5-14600KF desta máquina dá erro
+  interno do compilador (C1001) com muitos núcleos em carga.
+- Decodificar vídeo pela GPU no ffmpeg (`-hwaccel d3d11va`) foi **mais lento** que a CPU aqui (60 s de 4K: 14 s × 8,8 s):
+  não use.
 
 ## Lições aprendidas (regras; os casos com data e números estão em `LICOES.md`)
 - **Pasta curta** (`$W`): com caminho > 260 caracteres o `whisper-cli` falha calado e o `transcribe.ps1` termina sem

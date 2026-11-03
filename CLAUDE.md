@@ -30,7 +30,11 @@ skill nova precisa de uma linha `!` no `.gitignore`**, senão o git não vê.
   `var ARGS={...}; $.evalFile("<skill>/scripts/x.jsx")`, e devolvem JSON. O painel MCP Bridge precisa estar aberto.
   Só um servidor MCP pega a porta 8097: duas sessões do Claude abertas = uma sem Premiere.
 - **Ferramentas externas** em `%LOCALAPPDATA%\claude-premiere-tools`: `ffmpeg.exe`, `ffprobe.exe`, `whisper\`
-  (whisper.cpp + `ggml-large-v3.bin`), `motion\` (projeto Remotion instalado pelo `render-motion.ps1`). Não vão para o git.
+  (whisper.cpp CPU + `ggml-large-v3.bin`), `whisper-gpu\` (whisper.cpp compilado com Vulkan, usado por padrão),
+  `whisper-src\` (fonte para recompilar), `motion\` (projeto Remotion instalado pelo `render-motion.ps1`). Não vão para o git.
+- **GPU (AMD RX 6800 XT)**: Whisper via Vulkan (~3× mais rápido, mesmo resultado) e render do Remotion via ANGLE
+  (~2,8×). Decodificação de vídeo no ffmpeg fica na CPU (a GPU foi mais lenta). Compilar C++ nesta máquina: no
+  terminal do app e com `-j 1`/`-j 2` (o processador dá erro interno do compilador com muitos núcleos).
 - **`dump_timeline.jsx`** (legendas) é a base comum: exporta a trilha de áudio do diálogo, as faixas da câmera 2,
   os cortes visíveis e os overlays, tudo em tempo de timeline. `transcribe.ps1` remonta o áudio editado a partir dele
   e roda o Whisper (`words.csv` com o tempo de cada palavra). A skill de animações também usa esses arquivos.
