@@ -149,6 +149,12 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
   que o arquivo inteiro deixou no bloco seguinte.
 - **Entrevistador repetindo com a câmera 2 no ar** (`R$100 mil?`, `6 sessões?`): pela câmera sai branco. Com
   entrevistada mulher, confira a voz (f0) das repetições e respostas curtas e pinte pelo falante; liste para o usuário.
+- **Palavra curta logo depois de um jump cut** (`na`, `e`, `por`, `a gente`, `porque`): o Whisper do bloco inteiro
+  marca às vezes 0,2–0,5 s cedo, a palavra "cai" antes do corte, o `captions.ps1` não encaixa ela e encaixa a
+  legenda seguinte no corte → sobra legenda de 1–50 ms (ou uma linha dividida errado, `Você | tem casa`). Toda
+  legenda < 0,1 s perto de corte: transcreva os dois clipes do corte sozinhos (`-mc 0 -nt`) e, se a palavra está
+  depois do corte, comece ela no corte e a seguinte no tempo do Premiere. Também leve ao corte os inícios 1–3 frames
+  antes dele (o `-Lead` deixa) e confira o fim de cada bloco (legenda encaixada no fim do último clipe).
 - Teste às cegas de 01/11/2026 (3 vídeos) achou e consertou no `captions.ps1`: 1ª palavra trocada atrasava a legenda,
   snap levava a legenda para o corte errado ou para dentro de gráfico, linha sem par no Premiere ficava com 10 ms.
   Detalhes e números em `LICOES.md`.

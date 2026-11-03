@@ -13,3 +13,9 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
     não tem "÷" nem "×": esses sinais vão no rótulo.
   - O `place_mogrt.jsx` deixou o fim em 111,239 e 151,3173 s (início arredondado + dur); acertado à mão para o quadro.
   - O mp3 tem 1,205 s no ffprobe, mas o Premiere o coloca com 1,567 s (o clipe do usuário também).
+
+## 2026-11-03 — Caio Xavier, Takes bruto (8 vídeos, 4K)
+- Quadro passou a aceitar listas (`items`), cores por linha e conclusão em palavras: 7 quadros (passo a passo,
+  lista de prioridades, ranking, causas, conta de juros) num vídeo só de monólogo.
+- Errei dois tempos do quadro (palavra vizinha na legenda) e tive de parar o render 4K: conferir cada `t` antes.
+- "3 anos" no template de dinheiro com cor vermelha e fonte trocada para DKLongreach-Regular pelo `fontEditValue`.

@@ -83,3 +83,11 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
 - **Quem fala, com câmera 1 em plano aberto**: altura da voz (f0 mediana por trecho, autocorrelação em Node sobre o
   `edit.wav`; sem Python na máquina). ERIC: homem 110–140 Hz, mulher 220–260 Hz — resolveu `Aí ó tá vendo` (dela, na
   câmera 2) e `Então tá faltando um homem de verdade` (dele). Script: `legendas-trabalho\video-urgente\` (pitch.mjs).
+- **03/11/2026 — Caio Xavier "Takes bruto"** (monólogo, 8 vídeos numa sequência, 589 legendas do Premiere, 158 clipes).
+  Whisper do arquivo inteiro entrou em laço depois do 2º buraco (de 2:57 a 10:03 só frases repetidas); por bloco
+  (`-mc 0`) ficou certo. Mesmo por bloco, no bloco 1 os tempos saíram 0,3–0,5 s cedo (`milagre` 9,80 × 10,14 num trecho
+  de 1,5 s; `20 mil` 12,70 × 13,18). Com isso, 14 palavras curtas logo depois de um corte ficaram "antes" do corte e o
+  `captions.ps1` encaixou a legenda seguinte: `na` (1 ms), `e` (17 ms), `a gente` (34 ms), `Você | tem casa`, `não |
+  fica`, `ele não | vai virar`. Transcrevendo cada clipe sozinho, todas estavam depois do corte. Também 68 inícios
+  ficaram 1–3 frames antes de um corte e `a isso` (fim do bloco 3) foi encaixada no fim do último clipe. Consertado à
+  mão com `fix.js` (pasta `legendas-trabalho\takes-bruto`).

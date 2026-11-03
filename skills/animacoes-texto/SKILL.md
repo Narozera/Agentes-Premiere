@@ -115,6 +115,13 @@ pode ser vermelha) e conclusão que bate (`total`). Todos os tempos em segundos 
 **legendas corrigidas do usuário** (início da legenda de cada número; quadro do início da 1ª frase da conta ao fim da
 frase que fecha). Medidas na base 1080 (escalam com a largura); deixe vazia a faixa da legenda (y 1080–1200 na base
 1080). Exemplo pronto: `D:\EDIÇÃO\Caio Xavier\29-10\9 VIDEOS\animacoes\8366\quadro.json` (simulação de empréstimo).
+Quando não é conta (passo a passo, lista de prioridades, ranking, causas), use `items:[{n,text,sub,t,y,color,size}]`
+(bolinha numerada + texto, um a um); `info[].color` pinta o valor, `rows[].font:"text"` põe o rótulo da linha em
+Montserrat, `total.font:"text"` faz a conclusão em palavras (`size`, `color`). `rows`, `header` e `info` são opcionais.
+Sufixo sem letras (`%`) fica na Digital-7; com letras (`MIL`) vai pequeno em Montserrat. Exemplos dos 7 tipos:
+`D:\EDIÇÃO\Caio Xavier\03-11\Takes bruto\animacoes\quadros.json`. Espaçamento que enche a tela: 3 itens em y
+340/570/800, 4 itens em 300/500/700/900 (base 1080). Confira antes com stills rápidos (`renderStill` em 1080, quadro
+do fim de cada um) — um render 4K de 2 min de quadros leva vários minutos.
 Render 4K de ~43 s sem blur: ~7 min. Coloque o `.mov` com `scripts/place.jsx` numa trilha livre acima das imagens:
 `var ARGS={trackIndex:4, bin:"Animações de texto", items:[{file:"<pasta>/quadro_emprestimo.mov", start:81.2, dur:43.1}]}; $.evalFile("<$SK>/scripts/place.jsx");`
 (`bin` é obrigatório: é a pasta do projeto onde o arquivo é importado.)
@@ -180,3 +187,7 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   `fontEditValue` para o nome PostScript (ex. `Montserrat-ExtraBold`) e confira lendo de volta.
 - O `place_mogrt.jsx` arredonda o início para quadro, mas o fim (`início + dur`) não: acerte `clip.end` no quadro do
   fim da legenda depois de colocar.
+- Tempos do SRT são `hh:mm:ss`: converta com cuidado (01:48,983 = 108,983 s) e confira cada tempo do quadro contra a
+  legenda da palavra que ele mostra antes de renderizar (render 4K errado = refazer minutos de render).
+- Anos sem template próprio: use o template de dinheiro com `cor` vermelha e troque a fonte do Valor para
+  `DKLongreach-Regular` (nome PostScript) no `fontEditValue`.
