@@ -75,3 +75,15 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
   fonte). Estimativa automática por NCC com o template da referência + xcrop em folhas de 12 mediu os 159 em ~15 min
   (7 clipes com estimativa errada, achados no xcrop). Correções manuais: 65 (mão no rosto, headY do
   rastreador +110), 153 (score 0,42, câmera mexendo), 137 (perfil, fim com score 0,46).
+- **GUALDEZI "Seguros + Advogada + Consultora"** (2026-11-03, seq 4K, V2 com 78 clipes de 3 vídeos iPhone 4K em pé, sem
+  proxy). As referências foram o 1º take de cada vídeo: clipes 0 (escala 140), 26 (160) e 57+58 (150; o 58 também tinha
+  5 keys do usuário e ficou de fora). Os outros estavam em 100 no centro e foram para a escala da referência, com
+  `maxZoom` igual. Réguas pelo xcrop da referência (`pos + (medida - 1080) * escala`): A x=1074 y=433 (centro da testa);
+  B x=1072 y=394 (topo dos óculos escuros na cabeça); C x=995 y=434 (centro da cabeça, ela quase sempre de 3/4).
+  No vídeo C a folha mostrou TODOS os clipes, referências incluídas, ~+50 px à direita da régua. A leitura do centro da
+  cabeça em 3/4 diverge entre o xcrop e a folha, então o zero era o desvio da referência. Teria sido erro mover a
+  régua ou corrigir os outros por isso. O rastreador falhou com score 0,40–0,49: no 72 perdeu o rosto por 2 s quando o
+  entrevistador entrou à esquerda, e no 67 saltou 150 px. Também derivou 70–120 px quando ela virava de 3/4 para frente
+  (60, 64, 66, 76, 77) e quando ela jogou a cabeça para trás rindo (fim do 62, topo 200 px mais baixo). Foram 10 clipes
+  com `manual` de 4 a 14 pontos (28, 43, 60, 62, 64, 66, 67, 72, 76, 77). O `apply_checked.jsx` aponta para
+  C:/Users/Gustavo: aplicado com uma cópia local apontando para o repositório.

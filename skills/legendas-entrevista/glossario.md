@@ -60,6 +60,13 @@ mais alto. Câmera 1 = plano aberto dos dois (pinte pelo falante), câmera 2 = c
   "priminhas amigas" · `red flag` ← sumido (Premiere) · `já dá pra passar` ← "já tá pra passar" · `Aí ó tá vendo`
   ← "Aí já" · `7 centímetros` ← "sete".
 
+## Aeroporto / profissões (GUALDEZI — "Seguros + Advogada + Consultora", 03/11/2026; sem correção do usuário ainda)
+- Lugares: `Foz do Iguaçu` ← "Faz do Iguaçu" (Premiere) / "Pós-Iguaçu" (Whisper) · `Ponta Grossa` · `Joinville` ·
+  `São Paulo` (Premiere dividiu "Pra São | Paulo"). Instagram `Cocriando`.
+- Erros de audição: `Há 3 anos` ← "Há 13 anos" · `500 famílias` ← "500 milhas" · `Tem caldo` ← "Tem cauda" ·
+  `a minha idade` ← "a meia idade" · `Ganho` ← "Ganhe" · `Trabalho muito` ← "vale muito" · `Eu atendo` ← "Tendo" ·
+  `e uma filha` ← "E meu filho" · `com seguro` ← "que seguro" · `me der saúde` ← "me dê saúde" · `Bastante` ← "recente".
+
 ## Cidadania italiana / rua (GUALDEZI)
 - `Episcopal` ← "Piscopal" · `nomeado bispo` ← "Iado Dispo"/"Depois do" · `aposentado` ← "apresentado" ·
   `passaporte` ← "passaporto" · `muito dinheiro` ← "mandinga" · `68 anos` ← "Meia Oito" · `brasilianas`,

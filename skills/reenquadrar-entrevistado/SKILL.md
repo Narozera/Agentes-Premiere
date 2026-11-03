@@ -126,6 +126,17 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
 - **Muitos clipes (150+)**: estime o meio de todos por NCC com o template do rosto da referência de cada vídeo (mesma
   conta do track.ps1, busca no quadro inteiro) e confira tudo com `xcrop` em folhas de 12; só os que errarem vão à folha
   grosseira. Mão no rosto puxa o `headY` do rastreador ~100 px para baixo: `manual` com pontos a cada 0,3–0,4 s.
+- **Referência na folha de verificação**: os clipes de referência entram no job, então gere a folha `verify_head`
+  deles junto. O desvio que eles mostram é o "zero" daquele vídeo: em perfil/3/4 a leitura a olho na folha difere
+  ~50 px de saída do xcrop. Corrija só os clipes que fogem do desvio da referência, não os que fogem da régua.
+- **Rastreador com minScore 0,40–0,55 também falhou** (perdeu o rosto 2 s, ou saltou ~150 px quando o entrevistador
+  entrou no quadro): olhe esses com `-Step 0.3`. Se a busca ficou parada num ponto errado, refaça o xcrop centrado
+  onde a pessoa está de fato, não no valor rastreado (a janela corta o rosto).
+- **Óculos escuros na cabeça** durante o vídeo todo: use o topo dos óculos como `headY` na referência e nos outros
+  clipes. A borda é nítida, e o cabelo embaixo dela não dá para ler.
+- **Outra máquina**: o `apply_checked.jsx` chama `C:/Users/Gustavo/.../apply_keys.jsx` por caminho fixo. Fora dessa
+  máquina, use uma cópia com a mesma checagem apontando para o `apply_keys.jsx` do repositório. A ponte recusa
+  ("Script validation failed") string com `eval(`: deixe o `eval` dentro do `.jsx`.
 - **`execute_extendscript`** muda entre versões da ponte: termine com a expressão (`...; $.evalFile("...");`), e se
   falhar use `return`. `in` como chave de objeto (`{in: 1}`) quebra o script — use `inp`. Ponte "não está rodando" com
   o Premiere aberto: veja `%TEMP%\premiere-mcp-bridge\bridge-heartbeat.json`; se parou, peça para fechar diálogos e

@@ -166,3 +166,14 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   `"stroke":12`). MOGRT: só Movimento > Escala 200 (ver 1ª lição) — não mexa no campo Tamanho para isso.
 - Para checar rosto, componha um frame do .mov sobre o frame da fonte aplicando a Escala/Posição do clipe de V1/V2
   (ffmpeg `scale` + `crop`); ExtendScript: objeto com chave `in` sem aspas dá "EvalScript error".
+- **Som de dinheiro** (quando pedido): item `efeitoDinheiro.mp3` já importado no projeto (`C:\Edições\efeitoDinheiro.mp3`;
+  o som começa em 0,062 s). Uma cópia por animação numa trilha de áudio vazia no trecho (A2), início **4 quadros antes**
+  da animação, com `audioTracks[i].overwriteClip(item, tempo)` só depois de conferir que o trecho está vazio. Volume
+  original. Confira por dump que o A1 não mudou. O Premiere vê o mp3 com 1,567 s (ffprobe: 1,205 s); tudo bem.
+- **O usuário edita em paralelo**: liste as trilhas de novo logo antes de colocar. Se ele já animou um valor (outro
+  template, ex. Mister Horse com o texto), não duplique; relate. Use uma trilha nova acima das dele (V4).
+- **Confira se as fontes estão ativas na máquina** (`%APPDATA%\Adobe\CoreSync\plugins\livetype\r` + Fonts do
+  Windows): a Montserrat Bold pode faltar. A fonte de um campo de texto troca por script: no JSON do campo, mude
+  `fontEditValue` para o nome PostScript (ex. `Montserrat-ExtraBold`) e confira lendo de volta.
+- O `place_mogrt.jsx` arredonda o início para quadro, mas o fim (`início + dur`) não: acerte `clip.end` no quadro do
+  fim da legenda depois de colocar.

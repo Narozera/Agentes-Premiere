@@ -56,7 +56,11 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
    **Checagem final antes de importar** (sempre): para cada legenda, a câmera no meio dela (`dump.cam`) bate com a
    cor; nenhuma atravessa `dump.cuts`; fim > início; inícios em ordem, sem sobreposição; legendas de 1 palavra
    (respostas curtas) com a cor do falante certo. Corrija à mão o que falhar, com as palavras do Whisper.
-6. **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`
+6. **Antes de importar, tire um dump novo** (`dump-agora.json`) e compare o A1 com o `dump.json`: a legenda leva
+   20+ min e o usuário corta enquanto isso. Se mudou, `remap.mjs dump.json dump-agora.json <corrigida.srt> <saída>`,
+   refaça à mão as legendas que caíram no trecho cortado, tire as que começam embaixo de gráfico novo (regra do
+   `captions.ps1`) e rode a checagem com o `dump-agora.json`. Sem isso, tudo depois do corte entra atrasado.
+   **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`
    (se falhar, use a ferramenta `import_captions` + `createCaptionTrack`). Uma trilha nova é criada; a antiga continua lá.
    **Animações que entrarem depois**: as legendas embaixo delas ficam. Quando o agente de animações terminar, rode o
    passo 2 de novo (dump novo) e o passo 5 com o mesmo `texto.txt`, e importe de novo.
@@ -124,7 +128,15 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
   troca de falante cai num corte.
 - Premiere escreve dinheiro como `15000 R$` / `2 milhões R$`: troque pelo formato do estilo (`R$15 mil`, `R$2 milhões`).
 - **Checagem final** (passo 5) sempre, mesmo quando o script não reclama: em pergunta-resposta rápida ~20 legendas já
-  saíram com cor/tempo trocados perto dos cortes. Olhe também as listas TIRADAS, TEMPO DO WHISPER e INICIO x WHISPER.
+  saíram com cor/tempo trocados perto dos cortes. Olhe também as listas TIRADAS, TEMPO DO WHISPER e INICIO x WHISPER,
+  e procure legendas com menos de 0,1 s (o script deixa `É`/`e` com 10–50 ms perto de corte: dê o tempo do Premiere).
+- **Pasta de trabalho com sobra de outro vídeo**: `leg-<nome>` pode já existir com `words.csv`/`sent.srt`/`texto.txt`
+  antigos. Confira as datas (ou use pasta vazia) antes de esperar ou ler a transcrição.
+- **Várias entrevistas numa sequência**: transcreva **cada bloco do `edit.wav` separado** (`-mc 0`, entre os buracos do
+  `dump.audio`) e monte o `words.csv` com eles (guarde `words-orig.csv`). Some o laço no buraco e o atraso de ~0,5 s
+  que o arquivo inteiro deixou no bloco seguinte.
+- **Entrevistador repetindo com a câmera 2 no ar** (`R$100 mil?`, `6 sessões?`): pela câmera sai branco. Com
+  entrevistada mulher, confira a voz (f0) das repetições e respostas curtas e pinte pelo falante; liste para o usuário.
 - Teste às cegas de 01/11/2026 (3 vídeos) achou e consertou no `captions.ps1`: 1ª palavra trocada atrasava a legenda,
   snap levava a legenda para o corte errado ou para dentro de gráfico, linha sem par no Premiere ficava com 10 ms.
   Detalhes e números em `LICOES.md`.

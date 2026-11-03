@@ -61,6 +61,25 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
   No mesmo vídeo o Whisper do arquivo inteiro ficou 0,5–1 s adiantado no 4º bloco (lista INICIO x WHISPER com ~45
   itens); os trechos curtos confirmaram o tempo do Premiere. Cada resposta tinha clipe próprio na câmera 2, então a cor
   por câmera bateu com o falante; exceção: `Sim` dele fora de quadro com a câmera 2 no ar (f0 104 Hz).
+- **GUALDEZI "Seguros + Advogada + Consultora" (03/11/2026, 3 entrevistas, 416 legendas do Premiere → 429)**:
+  - A pasta `%TEMP%\claude\leg-gualdezi` já tinha `words.csv`, `sent.srt` e `texto.txt` de 30/10 (outro vídeo); o
+    laço de espera achou o `sent.srt` velho e parou na hora. Movidos para `antigo-30-10\`.
+  - O `edit.wav` inteiro inventou "Olha que coisa maravilhosa, né? Então, eu tenho uma ideia" ×3 no buraco
+    178,5–183,2 s (sem clipe de áudio) e deixou o 3º bloco ~0,4–0,5 s atrasado (Premiere `Eu sou advogada` 195,8 x
+    Whisper 196,3). Transcrever os 3 blocos separados (`-mc 0`) resolveu os dois; o `words.csv` final saiu deles.
+  - Trechos curtos (1–3 s) às vezes inventam ou trocam palavra (`400 clientes`, `E agora tá mais tranquilo`, `14?`):
+    quando 4 rodadas discordam, fique com o Premiere e liste.
+  - V1 aqui não é DJI: é iPhone em plano aberto com os dois, mas a edição corta para a V2 em toda resposta, então a cor
+    pela câmera bateu. Exceções achadas pela voz (ela ~210–260 Hz, ele ~125–175 Hz): o entrevistador repete `R$100 mil`,
+    `6 sessões`, completa `sai mais em conta` e diz `É` antes da pergunta com a câmera 2 no ar → amarelas.
+  - O `captions.ps1` deixou `É` com 10 ms, `e` com 20/50 ms e `O que que` com 17 ms, colados em cortes; corrigidos à
+    mão com o tempo do Premiere (`fix.mjs` em `legendas-trabalho\Sequence 01\`).
+  - **Legenda atrasada depois de importada**: enquanto o agente trabalhava (~23 min), o usuário tirou 0,32 s de pausa
+    dentro de `por mês` (26,2 s) e 1 frame em 35,4 s, e pôs 6 gráficos na V3. A legenda saiu do `dump.json` antigo e
+    entrou ~0,35 s atrasada do 26 s até o fim ("as legendas estão entrando no time errado"). Conserto: `dump-agora.json`,
+    `remap.mjs` do SRT corrigido (427 mantidas, 2 caíram no corte), `umas 10`/`por mês` refeitas pelo Whisper do
+    trecho atual e pelo corte, 8 tiradas embaixo dos gráficos (`rebase.mjs` na pasta de trabalho) → `Sequence 01 -
+    corrigida v2.srt`, 421 legendas.
 - **Quem fala, com câmera 1 em plano aberto**: altura da voz (f0 mediana por trecho, autocorrelação em Node sobre o
   `edit.wav`; sem Python na máquina). ERIC: homem 110–140 Hz, mulher 220–260 Hz — resolveu `Aí ó tá vendo` (dela, na
   câmera 2) e `Então tá faltando um homem de verdade` (dele). Script: `legendas-trabalho\video-urgente\` (pitch.mjs).
