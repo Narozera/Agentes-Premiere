@@ -108,3 +108,25 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
   fica`, `ele não | vai virar`. Transcrevendo cada clipe sozinho, todas estavam depois do corte. Também 68 inícios
   ficaram 1–3 frames antes de um corte e `a isso` (fim do bloco 3) foi encaixada no fim do último clipe. Consertado à
   mão com `fix.js` (pasta `legendas-trabalho\takes-bruto`).
+- **04/11/2026 — Caio Xavier "7 Vídeos", Sequence 05** (monólogo, 7 vídeos curtos numa sequência, 540 legendas do
+  Premiere → 537; uma câmera, V1; máquina `guilh`, Whisper na CPU, 7 blocos `-mc 0` em ~5 min):
+  - A V3 tinha 6 `Graphic` (Essential Graphics, `isMGT` = true) no topo da tela: lidos do `.prproj` eram manchetes
+    ("Quanto a sua empresa pagou de juros ao banco em 2026?", "O banco cortou o meu limite sem aviso..."), não animação
+    de valor. Com o `overlay` normal o `captions.ps1` teria tirado as legendas dos primeiros 6 s e do 2º vídeo.
+    Ficou `overlay` vazio no `dump.json` (`dump-orig.json` guardado).
+  - O último clipe (225–234 s, MVI_1672, só títulos, -51 dB) virou "Legenda por Sônia Ruberti" no Whisper; o fim do
+    bloco 6 também. Tirados do `words.csv`.
+  - 15 inícios 1–3 frames antes de um corte (`Essa`, `é`, `e`, `E`, `mas`, `com o`, `a sua`, `fecha`, `cabe`, `Pode`,
+    `então`, `Eu não`...): transcrevendo 1,6 s antes e 1,2 s depois de cada corte, **15 de 15** estavam depois do corte.
+    O `captions.ps1` tinha encaixado a legenda seguinte no corte e deixado a palavra com 17–67 ms (e dividido
+    `a sua | empresa` e `com o | limite` no corte). Consertado com `fix.mjs` + `ops.json`.
+  - Linhas com palavra trocada (`juro`→`juros`, `o`→`ou`, `do apartamento`→`de um apartamento`, `com o aceno`→`que eu
+    assino`) pegaram o tempo do Whisper, 0,3–0,45 s cedo; voltaram para o tempo do Premiere da palavra trocada.
+    `dívida` (fim do bloco 5) foi encaixada no fim do último clipe (192,82); voltou para 192,38.
+  - **Volta depois das animações (mesmo dia)**: o usuário tinha tirado 0,283 s em 79,27 s (ripple). O `remap.mjs`
+    manteve 535 e tirou 2: `E` (estava mesmo no pedaço cortado, ouvido sozinho: "porque") e `as portas` (o fim caía no
+    corte, mas a fala continua: devolvida com fim no corte 79,267); `como` foi para o corte. Tiradas 11 legendas
+    embaixo dos 6 MOGRTs de dinheiro/"mito"; `porque` (invadido 0,117 s) começou no fim da animação. O `fix.mjs` teria
+    esticado `é só um limite` e `trás` por cima das animações (buraco < 1 s) — por isso o `fin.mjs`. Entre o dump e a
+    importação o usuário pôs mais um título na V5 (fora da linha da legenda): dump de novo logo antes de importar.
+    Final: 525 legendas, importadas uma vez.

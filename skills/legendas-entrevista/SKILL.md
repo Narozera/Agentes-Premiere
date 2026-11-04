@@ -169,6 +169,18 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
 - Máquina sem `whisper-gpu`: large-v3 na CPU leva ~1,4× o áudio por passada (palavras + frases = 2 passadas). Com várias
   entrevistas, pule o arquivo inteiro e transcreva direto por bloco (`blocks.ps1` em `legendas-trabalho\Sequence 01\`
   do MACHADO "3 Bizonho").
+- **Títulos de texto no topo não são animação** (`Graphic` do Essential Graphics na V3, ex.: Caio Xavier): o
+  `captions.ps1` tiraria as legendas de baixo. Leia o texto do título no `.prproj` (gzip; `Source Text` em base64) e,
+  se for manchete/título, deixe o `overlay` vazio (guarde `dump-orig.json`) e avise. Na volta depois das animações,
+  tire esses títulos do `overlay` do dump novo.
+- **Clipe sem voz no fim da sequência** (só título/música): o Whisper inventa "Legenda por Sônia Ruberti"; confira o
+  volume do bloco (`volumedetect`, ~-50 dB = sem fala) e tire do `words.csv`.
+- MCP `execute_extendscript` via `invoke_tool`: argumento `script`, e o valor só volta com `return` (`return $.evalFile(...)`).
+- **Depois das animações, com `remap.mjs`**: ele tira a legenda cujo início **ou** fim caiu no trecho recortado —
+  confira as "fora" (a palavra de antes do corte pode continuar na edição: devolva com fim no corte) e ouça o trecho
+  novo (a palavra cortada some). Ao tirar legendas embaixo de animação, não use o `fix.mjs` (ele estende o fim da
+  anterior por cima de buraco < 1 s): use `fin.mjs` (sem preencher buracos) da pasta de trabalho do Caio Sequence 05.
+- Não rode a cópia do SRT final e o `import_srt.jsx` na mesma leva de ferramentas (rodam juntas): copie, confira, importe.
 - Teste às cegas de 01/11/2026 (3 vídeos) achou e consertou no `captions.ps1`: 1ª palavra trocada atrasava a legenda,
   snap levava a legenda para o corte errado ou para dentro de gráfico, linha sem par no Premiere ficava com 10 ms.
   Detalhes e números em `LICOES.md`.

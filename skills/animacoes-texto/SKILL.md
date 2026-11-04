@@ -196,3 +196,21 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   legenda da palavra que ele mostra antes de renderizar (render 4K errado = refazer minutos de render).
 - Anos sem template próprio: use o template de dinheiro com `cor` vermelha e troque a fonte do Valor para
   `DKLongreach-Regular` (nome PostScript) no `fontEditValue`.
+- **Montserrat faltando na máquina** (máquina `guilh`): use `MazzardH-Black` (derivada da Montserrat, tem acentos).
+  MOGRT: `fontEditValue` do Rótulo (e do Valor quando é palavra, ex. "MITO") = `MazzardH-Black`. Remotion: no spec,
+  `"fontFiles":{"Montserrat Black":"<caminho .otf>","Montserrat Bold":"<caminho .otf>"}` carrega o arquivo com o nome
+  de família que o Texto/Quadro usam. A Mazzard é mais larga: rótulo longo ("DIAS DE ANTECEDÊNCIA") no MOGRT a 64 px
+  (`fontSizeEditValue`), não 80.
+- **Frases contrastadas que precisam da legenda** ("Evite: … / Use: …"): etiqueta curta (EVITE vermelho / USE verde)
+  **acima** da linha da legenda (Remotion, `lineY` ≈ 1010 em 1080×1920), do início ao fim de cada frase. Não cobre a
+  legenda, então ela continua; veja no frame composto que não pega o queixo.
+- Conferir MOGRT com o texto deste vídeo sem exportar frame do Premiere: script do AE (`AfterFX.exe -noui -r`) que
+  abre uma CÓPIA do `.aep`, duplica a comp do template, troca texto/fonte/cor das camadas VALOR/ROTULO, salva outra
+  cópia e `app.quit()`; depois `aerender -comp <nome> -s 0 -e 120 -output x.mp4` (sem `-RStemplate`/`-OMtemplate`:
+  os nomes dos modelos são traduzidos no AE em português e dão erro).
+- `place.jsx` (`.mov`) também deixa o fim 1 quadro curto em alguns clipes: leia de volta e acerte `clip.end`.
+- Vídeo gravado deitado (1920×1080 com Rotação 90 no Movimento): no frame composto, `transpose=1` antes do `scale`
+  (largura 1080×Escala, altura 1920×Escala).
+- O usuário pode recortar com ripple **enquanto** o agente trabalha: os MOGRTs já colocados andam junto, mas o
+  `spec.json` e os `.mov` ainda não colocados não. Logo antes de colocar, compare o A1 com o `dump.json` e, se mudou,
+  rode o `remap.mjs` no spec (e atualize os tempos do spec com os da timeline).

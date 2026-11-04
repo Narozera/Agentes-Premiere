@@ -19,3 +19,17 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
   lista de prioridades, ranking, causas, conta de juros) num vídeo só de monólogo.
 - Errei dois tempos do quadro (palavra vizinha na legenda) e tive de parar o render 4K: conferir cada `t` antes.
 - "3 anos" no template de dinheiro com cor vermelha e fonte trocada para DKLongreach-Regular pelo `fontEditValue`.
+
+## 2026-11-04 — Caio Xavier, "7 Vídeos" (Sequence 05, 1080×1920 60 fps, máquina guilh)
+- Pedido aberto ("animações onde fica mais entendível"): 4 quadros (juro acima da lei → redução/devolução; corte de
+  limite → aviso de 30 dias/danos morais; aplicação → autorizou/não autorizou; penhora → parte da esposa/do marido),
+  6 MOGRTs (30 DIAS, R$ 80.000, R$ 12.000, MITO ×3) e 8 etiquetas EVITE/USE acima da legenda no vídeo de frases. Tudo
+  em V4 (V3 tinha as manchetes do usuário; V2 a caixinha da pergunta, coberta só pelo quadro da resposta).
+- Montserrat não estava instalada (nem no Adobe Fonts): o Remotion parou com "Fonte nao encontrada"/404. Entrou a
+  Mazzard H Black (`fontFiles` novo no `render-motion.ps1`) e no MOGRT o `fontEditValue` = `MazzardH-Black`.
+- Enquanto o agente trabalhava, o usuário tirou 17 quadros (0,283 s) em ~79,27 s com ripple: os MOGRTs já colocados
+  andaram junto; o spec foi convertido com `remap.mjs` (`dump-agora.json` montado do A1) antes de colocar os `.mov`.
+  O 1º "MITO" apareceu 7 quadros mais longo depois disso (provável ajuste do usuário): ficou como estava.
+- `place.jsx` deixou 6 dos 12 `.mov` com o fim 1 quadro antes do pedido; acertado com `clip.end`.
+- Heredoc do Bash juntou `\\` em `\` dentro de scripts gerados (caminho da fonte sem barras, regex quebrada no
+  ExtendScript): scripts com barra invertida vão pelo Write, não por `cat <<EOF`.

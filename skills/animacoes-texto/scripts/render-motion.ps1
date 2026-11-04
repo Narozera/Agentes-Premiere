@@ -21,7 +21,7 @@ if ($pkgChanged -or -not (Test-Path "$dst\node_modules\remotion")) {
   Push-Location $dst; npm install --no-audit --no-fund 2>&1 | Select-Object -Last 2; Pop-Location
 }
 
-function Resolve-Font([string]$name) {
+function Find-Font([string]$name) {
   # installed fonts by (part of) their registered name, e.g. "DK Longreach", "digital-7", "Montserrat Black"
   if (Test-Path $name) { return $name }
   foreach ($k in 'HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts') {
@@ -34,6 +34,13 @@ function Resolve-Font([string]$name) {
 }
 
 $cfg = Read-Job $Spec   # not $spec: same variable as the [string] param
+# "fontFiles": {"Montserrat Black": "C:\\...\\MazzardH-Black.otf"} in the spec loads that file under the family name
+# the components use (a font missing on this machine is replaced without touching Texto/Quadro)
+$aliases = @{}; if ($cfg.fontFiles) { $cfg.fontFiles.PSObject.Properties | ForEach-Object { $aliases[$_.Name] = [string]$_.Value } }
+function Resolve-Font([string]$name) {
+  if ($aliases.ContainsKey($name)) { return $aliases[$name] }
+  Find-Font $name
+}
 $fonts = @{}; $report = @()
 foreach ($it in $cfg.items) {
   # a Quadro has no lines: its fonts come in "useFonts"
