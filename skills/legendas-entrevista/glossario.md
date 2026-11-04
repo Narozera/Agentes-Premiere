@@ -67,6 +67,12 @@ mais alto. Câmera 1 = plano aberto dos dois (pinte pelo falante), câmera 2 = c
   `a minha idade` ← "a meia idade" · `Ganho` ← "Ganhe" · `Trabalho muito` ← "vale muito" · `Eu atendo` ← "Tendo" ·
   `e uma filha` ← "E meu filho" · `com seguro` ← "que seguro" · `me der saúde` ← "me dê saúde" · `Bastante` ← "recente".
 
+## Sexualidade / rua (MACHADO — "3 Bizonho", Curitiba, 04/11/2026; sem correção do usuário ainda)
+- `meio que bi` ← "que bem"/"nenhum que vi" · `Bissexual` ← "bi sexual" · `relacionamento` ← "lançamentos"/
+  "racionamento" · `Curitiba`, `Venezuela` · `Ah chegou uma hora` ← "Chegou 01h00" · `2 meses` ← "É imenso" ·
+  `0 a 10` ← "a dez" · `Tenho 20` ← "Tem 20" · `de boa` ← "de bola"/"não é boa".
+- Entrevistado venezuelano: Whisper escreve `estou`/`está`/`estava` e foram mantidos (falante não nativo; confirmar).
+
 ## Cidadania italiana / rua (GUALDEZI)
 - `Episcopal` ← "Piscopal" · `nomeado bispo` ← "Iado Dispo"/"Depois do" · `aposentado` ← "apresentado" ·
   `passaporte` ← "passaporto" · `muito dinheiro` ← "mandinga" · `68 anos` ← "Meia Oito" · `brasilianas`,

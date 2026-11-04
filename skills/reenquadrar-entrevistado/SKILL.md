@@ -143,3 +143,11 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
   reabrir Window > Extensions > MCP Bridge. Enquanto isso, medição/rastreamento/verificação só precisam do ffmpeg.
 - **Zoom de um clipe muito acima dos vizinhos** (ex.: +57 com o resto do vídeo em +15–30) pode ser rastreio errado, não só rosto na borda: braços subindo perto da cabeça (gesto, dança) fazem o rastreador saltar ~200 px com score > 0,95. Confira esse clipe com `-Step 0.3` e meça com `xcrop` antes de aplicar.
 - **Referência por entrevista**: vários vídeos na trilha e só o 1º clipe de cada um enquadrado à mão (escala 129–157, keys de posição) → réguas e `maxZoom` por vídeo, deduzidos desse clipe; deixe a referência fora do `only`.
+- **"Réguas padrão" com referência enquadrada pelo usuário**: leia a régua de cima do quadro de SAÍDA das referências
+  antes de usar 768 (4K). Já deu y≈440: com 768 a cabeça ficaria ~330 px mais baixa que nos clipes dele. Relate o valor usado.
+- **Estimativa do meio por NCC no quadro inteiro**: só vale com score ≥ 0,9. Entre 0,45 e 0,85 a posição saiu errada
+  (cantos, outro objeto), então meça esses na folha grosseira.
+- **Boné para trás / rosto virando de lado**: o rastreador desliza 50–150 px **sem** score baixo (minScore 0,6–0,9).
+  Verifique todos os clipes > 1 s com `-Step 0.3` e corrija com `manual` (6–16 pontos nos clipes longos).
+- **Rodar os `.ps1`**: use a ferramenta PowerShell. Pelo bash, `powershell -File x.ps1 -Clips 0,1,2` chega como uma
+  string só (sai 1 clipe), e caminho relativo em `-Out` quebra (`GetDirectoryName` vazio). Use sempre caminho absoluto.

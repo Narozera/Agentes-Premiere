@@ -83,6 +83,23 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
 - **Quem fala, com câmera 1 em plano aberto**: altura da voz (f0 mediana por trecho, autocorrelação em Node sobre o
   `edit.wav`; sem Python na máquina). ERIC: homem 110–140 Hz, mulher 220–260 Hz — resolveu `Aí ó tá vendo` (dela, na
   câmera 2) e `Então tá faltando um homem de verdade` (dele). Script: `legendas-trabalho\video-urgente\` (pitch.mjs).
+- **04/11/2026 — MACHADO "3 Bizonho"** (3 entrevistas de rua em Curitiba sobre sexualidade, 419 legendas do Premiere →
+  420; máquina do usuário `guilh`, sem `whisper-gpu`):
+  - A pasta `%TEMP%\claude\leg-bizonho` já tinha `dump.json`/`words.csv` de uma tentativa de 40 min antes (sem
+    `sent.srt`). Movidos para `antigo-1134\` antes de começar.
+  - Transcrição direto por bloco (3 blocos, `-mc 0`, palavras + frases): 124 + 131 + 72 s na CPU (i5/20 threads, `-t 16`).
+    Sem laço nem fala inventada.
+  - V1 = iPhone em plano aberto com os dois, mas a edição corta para a V2 em toda resposta: a cor por câmera bateu,
+    menos o `É` em V1 (67,5 s, provável entrevistador) e o `É?` dele com a V2 no ar (243,6 s). As respostas de 1 palavra
+    (`De homem`, `Solteiro`, `Não`, `20`, `Sim`) saíram amarelas pela regra das vizinhas e o `Você é bi` / `Por quê que é`
+    saíram brancas: 14 cores corrigidas à mão.
+  - Whisper do bloco 0,3–0,6 s longe do Premiere em ~35 inícios (para os dois lados). Transcrever os clipes do áudio
+    sozinhos (`clips.ps1`) confirmou o Premiere em quase todos; onde o clipe mostrou a palavra do outro lado do corte
+    (`Então | vindo` em 24,32; `Então | deu pra | continuar` em 38,48/39,07/39,57; `Como que foi esse` e `E como que foi`
+    começando no corte), a linha foi dividida ou levada ao corte.
+  - Linhas com palavra nova no começo (`É uma questão`, `É mais de boa`, `a gente tem`) começaram no tempo da 2ª palavra
+    (até 0,7 s tarde). Correções à mão com `fix.mjs` + `ops.json` e conferidas com `check.mjs` (cor × câmera, atravessa
+    corte, corte perto do início, < 0,15 s, sobreposição) — tudo na pasta `legendas-trabalho\Sequence 01\` do projeto.
 - **03/11/2026 — Caio Xavier "Takes bruto"** (monólogo, 8 vídeos numa sequência, 589 legendas do Premiere, 158 clipes).
   Whisper do arquivo inteiro entrou em laço depois do 2º buraco (de 2:57 a 10:03 só frases repetidas); por bloco
   (`-mc 0`) ficou certo. Mesmo por bloco, no bloco 1 os tempos saíram 0,3–0,5 s cedo (`milagre` 9,80 × 10,14 num trecho

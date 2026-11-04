@@ -89,3 +89,13 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
   C:/Users/Gustavo: aplicado com uma cópia local apontando para o repositório.
 
 - **2026-11-04, MACHADO "4 VIDEOS"** (4K 2160×3840, 114 clipes na V2, 4 entrevistas de rua, iPhone com proxy 540×960): só o 1º clipe de cada entrevista estava enquadrado à mão (0: 131, 27: 129, 59: 146, 86: 157); o resto em 100, sem margem. Réguas deduzidas por vídeo: 960/565, 1100/552, 1110/592, 1058/590. Escalas subiram só o mínimo (108–130, uma 145). O clipe 102 subiu +57 porque o rastreador saltou ~200 px para baixo/direita (score 0,97) quando o rapaz dançou com os braços perto da cabeça; corrigido com 8 pontos `manual` (a escala continuou 157 porque ele de fato foi para a borda direita da fonte; posição presa na borda por ~0,5 s). Estimativa NCC do meio dos 114 clipes errou ~35 (pegou outra parte do quadro com score 0,55–0,88): todos revistos com folha grosseira + xcrop.
+
+- **MACHADO "3 Bizonho"** (2026-11-04, seq 4K 2160×3840, V2 com 73 clipes de 3 vídeos iPhone 4K em pé, sem proxy,
+  outra máquina). Referências enquadradas pelo usuário: 0 (escala 155), 26 (145) e 51 (150), com 5–10 keys; os outros em
+  100 no centro foram para a escala da referência do vídeo (`zoom` = `maxZoom` = referência; nenhum precisou subir mais).
+  O pedido era "réguas padrão", mas o quadro de saída das referências mostrou o topo da cabeça em y≈440 (não 768) e o
+  rosto em x≈1080: usado x=1080, y=440. A NCC de quadro inteiro com o template da referência acertou o vídeo A (scores
+  0,96–0,99) e errou quase todo o B e o C (0,45–0,85, posições nos cantos), então foi preciso a folha grosseira. O
+  rastreador derivou em 15 clipes do rapaz de boné para trás (vídeo B) e em 2 do C, todos com minScore 0,43–0,9: 28, 32,
+  33, 34, 36, 38, 40, 42, 43, 45, 46, 48, 50, 54, 56 com `manual` (3 a 16 pontos). No 39 o desvio era igual no clipe
+  todo: +50 px em x somados no track.json. Pelo bash, `powershell -File ... -Clips 0,26,51` gerou folha com 1 clipe só.

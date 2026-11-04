@@ -161,6 +161,14 @@ O usuário exporta a legenda que ele mesmo arrumou. Compare com o Premiere (e co
   legenda < 0,1 s perto de corte: transcreva os dois clipes do corte sozinhos (`-mc 0 -nt`) e, se a palavra está
   depois do corte, comece ela no corte e a seguinte no tempo do Premiere. Também leve ao corte os inícios 1–3 frames
   antes dele (o `-Lead` deixa) e confira o fim de cada bloco (legenda encaixada no fim do último clipe).
+- **Fala acrescentada no começo da linha** (`É`, `Ah`, `a gente`, que o Premiere não tem): o `captions.ps1` começa a
+  linha na 1ª palavra que casa com o Premiere, atrasada 0,3–0,7 s, e às vezes depois de um corte. Confira toda linha
+  que começa com palavra nova e leve o início ao corte ou ao Whisper do clipe.
+- **Whisper do bloco discorda do Premiere em ±0,5 s dentro do bloco** (INICIO x WHISPER com ~35 itens): transcreva os
+  clipes do áudio sozinhos antes de mexer; quando o clipe confirma o Premiere, fique com o tempo do Premiere.
+- Máquina sem `whisper-gpu`: large-v3 na CPU leva ~1,4× o áudio por passada (palavras + frases = 2 passadas). Com várias
+  entrevistas, pule o arquivo inteiro e transcreva direto por bloco (`blocks.ps1` em `legendas-trabalho\Sequence 01\`
+  do MACHADO "3 Bizonho").
 - Teste às cegas de 01/11/2026 (3 vídeos) achou e consertou no `captions.ps1`: 1ª palavra trocada atrasava a legenda,
   snap levava a legenda para o corte errado ou para dentro de gráfico, linha sem par no Premiere ficava com 10 ms.
   Detalhes e números em `LICOES.md`.
