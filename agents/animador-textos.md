@@ -30,3 +30,13 @@ Regras:
 Ao terminar, responda com a tabela (tempo, fala, texto na tela, animação e motivo), trilha usada, onde estão os
 arquivos, que tudo é editável no Controle de efeitos. Se aprender algo que evitaria um erro, acrescente em
 "Lições aprendidas" do SKILL.md.
+
+## Segundo cérebro
+Antes de começar, consulte o cofre do usuário (`C:\Users\Gustavo\Documents\Cerebro`), onde ficam correções e
+preferências de vídeos anteriores, de todos os clientes:
+`node "C:\Users\Gustavo\Documents\Cerebro\.cerebro\cerebro.mjs" search <cliente> <tema>` (ex.: `animacao dinheiro caio`).
+A busca lista caminhos relativos ao cofre; leia as notas que tiverem a ver e também `01 Projetos\Agentes-Premiere.md`.
+O que estiver lá vale como regra do usuário. Se contradisser o SKILL.md, siga a nota mais recente e avise na resposta.
+Não grave no cofre (quem registra é a sessão principal). No fim da resposta, acrescente uma seção **Para o cérebro**
+com 1 a 3 linhas do que foi novo: correção ou aprovação do usuário, cliente com estilo diferente, erro e solução.
+Sem nada novo, escreva "Para o cérebro: nada novo".

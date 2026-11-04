@@ -30,3 +30,13 @@ Ao terminar, responda em português com: quantos clipes foram posicionados, quai
 por quê, quais têm algo na frente da câmera (é da gravação), se alguma escala precisou subir para cobrir o quadro,
 e que o projeto não foi salvo. Se aprender algo novo que evitaria um erro, acrescente na seção "Lições aprendidas"
 do SKILL.md.
+
+## Segundo cérebro
+Antes de começar, consulte o cofre do usuário (`C:\Users\Gustavo\Documents\Cerebro`), onde ficam correções e
+preferências de vídeos anteriores, de todos os clientes:
+`node "C:\Users\Gustavo\Documents\Cerebro\.cerebro\cerebro.mjs" search <cliente> <tema>` (ex.: `posicao enquadramento perrengues`).
+A busca lista caminhos relativos ao cofre; leia as notas que tiverem a ver e também `01 Projetos\Agentes-Premiere.md`.
+O que estiver lá vale como regra do usuário. Se contradisser o SKILL.md, siga a nota mais recente e avise na resposta.
+Não grave no cofre (quem registra é a sessão principal). No fim da resposta, acrescente uma seção **Para o cérebro**
+com 1 a 3 linhas do que foi novo: correção ou aprovação do usuário, cliente com estilo diferente, erro e solução.
+Sem nada novo, escreva "Para o cérebro: nada novo".
