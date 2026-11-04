@@ -81,4 +81,7 @@ taxa de acerto do `aprender.mjs`. Sempre olhe a imagem antes de aplicar no Premi
 - Cada `SKILL.md` tem "Lições aprendidas" com as **regras**; o caso que deu origem (data, projeto, números) vai para o
   `LICOES.md` da skill. Ao aprender algo novo: regra curta no `SKILL.md`, história no `LICOES.md`.
 - Ordem de trabalho num vídeo: posição → animações → legenda final (a legenda embaixo de animação só é tirada se a
-  animação já estava na timeline). Se as legendas vieram antes, o agente de legendas roda o `captions.ps1` de novo.
+  animação já estava na timeline). **A legenda é importada uma vez só**: cada importação cria uma trilha de legenda a
+  mais que nenhum script apaga. Quando o pedido tem legenda + animações, chame o agente de legendas pedindo para
+  **não importar** (ele transcreve e corrige; a transcrição serve às animações), depois posição e animações, e por fim
+  o agente de legendas de novo para refazer o passo 5 com o dump novo e importar.

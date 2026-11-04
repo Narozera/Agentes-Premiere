@@ -62,8 +62,14 @@ usuário faz à mão — não acrescente. As regras abaixo só valem onde esse a
    `captions.ps1`) e rode a checagem com o `dump-agora.json`. Sem isso, tudo depois do corte entra atrasado.
    **Importar**: `var ARGS={srt:"<caminho do SRT corrigido>"}; $.evalFile("<$SK>/scripts/import_srt.jsx");`
    (se falhar, use a ferramenta `import_captions` + `createCaptionTrack`). Uma trilha nova é criada; a antiga continua lá.
-   **Animações que entrarem depois**: as legendas embaixo delas ficam. Quando o agente de animações terminar, rode o
-   passo 2 de novo (dump novo) e o passo 5 com o mesmo `texto.txt`, e importe de novo.
+   **Cada importação vira uma trilha a mais** (nenhum script apaga nem edita trilha de legenda no Premiere 26.5), e o
+   usuário não quer trilhas repetidas. Por isso **importe uma vez só**, no fim:
+   - Se o pedido inclui animações (ou quem chamou disse "não importe"), pare depois do passo 5: entregue o SRT
+     corrigido e os arquivos de trabalho **sem importar**. Quando as animações estiverem na timeline, rode o passo 2
+     de novo (dump novo; tire do `overlay` os quadros em tela cheia, que mantêm a legenda por baixo), o passo 5 com o
+     mesmo `texto.txt` e só então importe.
+   - Se as animações entrarem depois de uma legenda já importada, avise o usuário que a nova trilha substitui a
+     anterior e que ele pode apagar a antiga à mão.
 7. Relate: o que mudou no texto (exemplos antes/depois e o que foi redividido), quais ficaram para conferir, que é
    preciso desativar a trilha antiga e aplicar o estilo de trilha na nova, e que o projeto não foi salvo.
    Lembre o usuário: depois de corrigir, exportar a trilha dele como `<nome> - final.srt` e pedir "aprende com essa".

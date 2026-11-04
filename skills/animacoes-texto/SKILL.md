@@ -1,6 +1,6 @@
 ---
 name: animacoes-texto
-description: Cria animações de texto para entrevistas no Premiere Pro quando a pessoa fala de dinheiro (números em Digital-7 verde, palavras em Montserrat Bold), quantidades (X pessoas, X mercadorias... em DK Longreach) e anos (DK Longreach vermelho) — encontra as menções na transcrição, escolhe a melhor animação para cada caso (pop, queda, impacto, cascata, contador, roleta) e coloca na timeline como gráfico EDITÁVEL (MOGRT feito no After Effects) na linha da legenda. Quando a pessoa faz uma conta (empréstimo, juros, parcelas, lucro), monta um quadro de contas em tela cheia (Remotion) com a conta aparecendo linha a linha. Também remonta/atualiza os templates MOGRT da biblioteca. Use sempre que o usuário pedir motion, animação, destaque ou "efeito" em valores, preços, números, quantidades, anos ou contas de um vídeo no Premiere, mesmo sem dizer "MOGRT". Não serve para legendas (isso é a skill legendas-entrevista).
+description: Cria animações de texto para entrevistas no Premiere Pro quando a pessoa fala de dinheiro (números em Digital-7 verde, palavras em Montserrat Bold), quantidades (X pessoas, X mercadorias... em DK Longreach) e anos (DK Longreach vermelho) — encontra as menções na transcrição, escolhe a melhor animação para cada caso (pop, queda, impacto, cascata, contador, roleta) e coloca na timeline como gráfico EDITÁVEL (MOGRT feito no After Effects) na linha da legenda. Em vídeo de um orador só (monólogo), quando ele faz uma conta ou explica uma lista, monta um quadro em tela cheia (Remotion); em entrevista, nunca quadro, só MOGRT. Também remonta/atualiza os templates MOGRT da biblioteca. Use sempre que o usuário pedir motion, animação, destaque ou "efeito" em valores, preços, números, quantidades, anos ou contas de um vídeo no Premiere, mesmo sem dizer "MOGRT". Não serve para legendas (isso é a skill legendas-entrevista).
 ---
 
 # Animações de texto (dinheiro, quantidades, anos)
@@ -71,7 +71,8 @@ No Remotion (`render-motion.ps1`) os mesmos nomes existem; lá `roleta` gira os 
    existir, o `words.csv`. Sem transcrição, use só o `dump_timeline.jsx` + `transcribe.ps1` da skill
    `legendas-entrevista` (só leitura) — nunca o `captions.ps1` nem o `import_srt.jsx`. Liste as legendas com valor
    (dinheiro / quantidade / anos), juntando as seguidas que repetem o valor. Ignore horas, endereços e perguntas.
-   **Vários números que se relacionam (uma conta) → quadro de contas** (seção abaixo), não valores soltos.
+   **Vários números que se relacionam (uma conta) → quadro de contas** (seção abaixo), não valores soltos — **só em
+   vídeo de um orador** (monólogo). Em entrevista, só MOGRT.
 2. Escreva `<pasta do projeto>\animacoes\spec.json` (guarda o trabalho; mesmo formato do Remotion):
    ```json
    {"width":1080,"height":1920,"fps":60,"items":[
@@ -107,8 +108,12 @@ um campo foi dividido/renomeado, `from:{"Cor do valor":"Cor","Cor do rótulo":"C
 ficam o texto/fonte do usuário e as opções (capProp*) do template novo.
 
 ## Quadro de contas (quando a pessoa faz uma conta)
-Quando o entrevistado explica uma conta (empréstimo, juros, parcelas, lucro), o usuário quer um **quadro em tela
-cheia** com a conta sendo montada linha a linha enquanto a pessoa fala por trás (não valores soltos na legenda).
+**Só em vídeo de um orador só** (monólogo, uma câmera, como o Caio Xavier). **Em entrevista (entrevistador +
+entrevistado) nunca faça quadro**: o usuário quer só as animações de texto (pedido de 2026-11-04, depois do quadro
+"POR QUE NÃO TER FILHOS" no MACHADO "4 VIDEOS").
+Quando o orador explica uma conta (empréstimo, juros, parcelas, lucro) ou algo que cabe numa lista, o usuário quer um
+**quadro em tela cheia** com a conta sendo montada linha a linha enquanto a pessoa fala por trás (não valores soltos
+na legenda).
 Componente `motion/src/Quadro.jsx` (Remotion, `"comp":"Quadro"`): fundo escuro 90% com grade, título, linhas de
 dados (`info`: rótulo + valor, com contagem), tabela (`rows`: rótulo, valor que conta e barra proporcional; a última
 pode ser vermelha) e conclusão que bate (`total`). Todos os tempos em segundos desde o início do quadro, tirados das

@@ -1,4 +1,4 @@
----
+﻿---
 name: reenquadrar-entrevistado
 description: Reenquadra no Premiere Pro a câmera do entrevistado (vídeo vertical) com keyframes de posição que seguem o rosto e animação de escala (punch-in / zoom lento), mantendo o rosto no centro e o topo da cabeça na régua de cima. Use sempre que o usuário pedir para centralizar, enquadrar, reposicionar, rastrear, "fazer a posição" ou dar zoom no entrevistado/convidado de uma trilha do Premiere, ou para "ajustar as posições da câmera 2 / segunda câmera", mesmo sem citar keyframes. Quando o pedido for só posição (sem mexer no zoom), o agente posicionador-video usa esta mesma skill mantendo a escala de cada clipe.
 ---
@@ -141,3 +141,5 @@ Leia a legenda/transcrição de cada clipe. Alterne entre clipes consecutivos (j
   falhar use `return`. `in` como chave de objeto (`{in: 1}`) quebra o script — use `inp`. Ponte "não está rodando" com
   o Premiere aberto: veja `%TEMP%\premiere-mcp-bridge\bridge-heartbeat.json`; se parou, peça para fechar diálogos e
   reabrir Window > Extensions > MCP Bridge. Enquanto isso, medição/rastreamento/verificação só precisam do ffmpeg.
+- **Zoom de um clipe muito acima dos vizinhos** (ex.: +57 com o resto do vídeo em +15–30) pode ser rastreio errado, não só rosto na borda: braços subindo perto da cabeça (gesto, dança) fazem o rastreador saltar ~200 px com score > 0,95. Confira esse clipe com `-Step 0.3` e meça com `xcrop` antes de aplicar.
+- **Referência por entrevista**: vários vídeos na trilha e só o 1º clipe de cada um enquadrado à mão (escala 129–157, keys de posição) → réguas e `maxZoom` por vídeo, deduzidos desse clipe; deixe a referência fora do `only`.

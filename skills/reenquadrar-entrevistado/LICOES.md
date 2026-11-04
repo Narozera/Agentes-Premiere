@@ -1,4 +1,4 @@
-# Lições aprendidas — histórico de casos (reenquadrar-entrevistado)
+﻿# Lições aprendidas — histórico de casos (reenquadrar-entrevistado)
 
 Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Leia quando um caso parecido aparecer.
 
@@ -87,3 +87,5 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
   (60, 64, 66, 76, 77) e quando ela jogou a cabeça para trás rindo (fim do 62, topo 200 px mais baixo). Foram 10 clipes
   com `manual` de 4 a 14 pontos (28, 43, 60, 62, 64, 66, 67, 72, 76, 77). O `apply_checked.jsx` aponta para
   C:/Users/Gustavo: aplicado com uma cópia local apontando para o repositório.
+
+- **2026-11-04, MACHADO "4 VIDEOS"** (4K 2160×3840, 114 clipes na V2, 4 entrevistas de rua, iPhone com proxy 540×960): só o 1º clipe de cada entrevista estava enquadrado à mão (0: 131, 27: 129, 59: 146, 86: 157); o resto em 100, sem margem. Réguas deduzidas por vídeo: 960/565, 1100/552, 1110/592, 1058/590. Escalas subiram só o mínimo (108–130, uma 145). O clipe 102 subiu +57 porque o rastreador saltou ~200 px para baixo/direita (score 0,97) quando o rapaz dançou com os braços perto da cabeça; corrigido com 8 pontos `manual` (a escala continuou 157 porque ele de fato foi para a borda direita da fonte; posição presa na borda por ~0,5 s). Estimativa NCC do meio dos 114 clipes errou ~35 (pegou outra parte do quadro com score 0,55–0,88): todos revistos com folha grosseira + xcrop.

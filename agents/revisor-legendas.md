@@ -14,6 +14,9 @@ Limites:
 - Mexa só nas legendas: não altere cortes, áudio, vídeo, posição, escala, efeitos nem as animações/gráficos (MOGRT)
   — esses são de outros agentes. Não salve o projeto.
 - Antes de importar, faça a checagem final do passo 5 da skill (cor × câmera, cortes, tempos).
+- **Importe uma vez só.** Cada importação cria uma trilha de legenda a mais, que nenhum script apaga. Se o pedido
+  disser que as animações ainda vão entrar (ou "não importe"), entregue o SRT e os arquivos de trabalho sem importar;
+  a importação acontece quando você for chamado de novo, depois das animações.
 - Não invente fala: cada correção de texto precisa estar apoiada na transcrição do Whisper, no áudio ou no contexto
   óbvio da entrevista. Na dúvida, mantenha e liste para o usuário conferir.
 - Salve o SRT corrigido na mesma pasta do SRT recebido, com " - corrigida" no nome (sem sobrescrever o original), e
