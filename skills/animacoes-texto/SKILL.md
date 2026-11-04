@@ -191,7 +191,7 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
   Windows): a Montserrat Bold pode faltar. A fonte de um campo de texto troca por script: no JSON do campo, mude
   `fontEditValue` para o nome PostScript (ex. `Montserrat-ExtraBold`) e confira lendo de volta.
 - O `place_mogrt.jsx` arredonda o início para quadro, mas o fim (`início + dur`) não: acerte `clip.end` no quadro do
-  fim da legenda depois de colocar.
+  fim da legenda depois de colocar. O `place.jsx` (quadros) pode cortar 1 quadro a menos: confira e acerte `clip.end` e `outPoint`.
 - Tempos do SRT são `hh:mm:ss`: converta com cuidado (01:48,983 = 108,983 s) e confira cada tempo do quadro contra a
   legenda da palavra que ele mostra antes de renderizar (render 4K errado = refazer minutos de render).
 - Anos sem template próprio: use o template de dinheiro com `cor` vermelha e troque a fonte do Valor para
