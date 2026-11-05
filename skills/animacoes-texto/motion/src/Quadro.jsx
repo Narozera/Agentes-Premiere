@@ -10,10 +10,11 @@ import {loadFont} from '@remotion/fonts';
 //  Not a calculation (a list of steps/rights/priorities): items:[{n,text,sub,t,y,color}] = numbered badge + text that
 //  slide in one by one. info[].color tints a value; rows/header/info are optional; row label font:'text' = Montserrat;
 //  a suffix without letters (%, x) stays in the number font, one with letters (MIL) goes small in Montserrat.
+//  items[].tSub = the sub line comes later, when it is said (its place is kept, so the text does not jump); subSize, subColor.
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'};
 const expoOut = Easing.bezier(0.16, 1, 0.3, 1);
-const GREEN = '#00ff00', WHITE = '#ffffff', GREY = '#9fb3a8';
+const GREEN = '#00ff12', WHITE = '#ffffff', GREY = '#9fb3a8';
 const NUM = '"digital-7"', TXT = '"Montserrat Black"', TXT2 = '"Montserrat Bold"';
 
 const fmt = (v) => Math.round(v).toLocaleString('pt-BR');
@@ -81,7 +82,7 @@ export const Quadro = (p) => {
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: NUM, fontSize: 76 * u, color: col, textShadow: `0 0 ${12 * u}px ${col}`, scale: String(punch(frame, fps, it.t + 0.3))}}>{it.n ?? i + 1}</div>
             <div style={{display: 'flex', flexDirection: 'column'}}>
               <span style={{fontFamily: TXT, fontSize: (it.size ?? 56) * u, color: it.textColor ?? WHITE, lineHeight: 1.1}}>{it.text}</span>
-              {it.sub ? <span style={{fontFamily: TXT2, fontSize: 38 * u, color: it.subColor ?? GREY, marginTop: 8 * u, lineHeight: 1.15}}>{it.sub}</span> : null}
+              {it.sub ? <span style={{fontFamily: TXT2, fontSize: (it.subSize ?? 38) * u, color: it.subColor ?? GREY, marginTop: 8 * u, lineHeight: 1.15, visibility: it.tSub != null && frame < it.tSub * fps ? 'hidden' : 'visible', translate: it.tSub != null ? `${(1 - enter(frame, fps, it.tSub)) * -80 * u}px 0px` : undefined}}>{it.sub}</span> : null}
             </div>
           </In>
         );

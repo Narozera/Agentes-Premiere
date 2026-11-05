@@ -33,3 +33,8 @@ Casos reais, com datas e números, que deram origem às regras do `SKILL.md`. Le
 - `place.jsx` deixou 6 dos 12 `.mov` com o fim 1 quadro antes do pedido; acertado com `clip.end`.
 - Heredoc do Bash juntou `\\` em `\` dentro de scripts gerados (caminho da fonte sem barras, regex quebrada no
   ExtendScript): scripts com barra invertida vão pelo Write, não por `cat <<EOF`.
+
+## 2026-11-05 — Caio Xavier, 5 VIDEOS (5 blocos, 4K)
+- "12 de novembro" no Contador com DK Longreach: no render de teste apareceu um "5" serifado no meio da contagem. Trocado
+  para Impacto. "4 sócios" foi em Montserrat-Black (o 4 da DK Longreach é rabisco).
+- Quadro de 2 casos (casa x pequena propriedade) pedia o veredito só quando ele fala: nasceu `items[].tSub`.

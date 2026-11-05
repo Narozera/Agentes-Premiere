@@ -35,7 +35,7 @@ expressões; molas em `spr(t, freqHz, amortecimento)`), rode de novo (abaixo) e 
 ## Estilos padrão do usuário (fonte e cor podem ser trocadas quando ele pedir)
 | Categoria | Exemplos | Fonte | Cor |
 |---|---|---|---|
-| dinheiro | "R$ 2", "30 reais", "R$ 1.500", "mil reais" | `Digital-7` | `#00ff00` (pedido 2026-10-30: "ff00") |
+| dinheiro | "R$ 2", "30 reais", "R$ 1.500", "mil reais" | `Digital-7` | `#00ff12` (aprovado; no MOGRT passe `cor:[0,1,18/255]`, o template nasce `#00ff00`) |
 | quantidade | "146 crianças", "300 pessoas", "50 peças" | `DK Longreach` | `#ffffff` |
 | anos | "40 anos", "há 12 anos", "desde 1985" | `DK Longreach` | `#ff1a1a` |
 **Palavras (MÍNIMO, MÁXIMO, JUROS, MIL, AO MÊS, rótulos) sempre em `Montserrat Bold`** (pedido do usuário,
@@ -77,8 +77,8 @@ No Remotion (`render-motion.ps1`) os mesmos nomes existem; lá `roleta` gira os 
    ```json
    {"width":1080,"height":1920,"fps":60,"items":[
      {"id":"dinheiro_03","start":74.62,"dur":1.08,"anim":"impacto","lineY":1138,"glow":0.5,
-      "lines":[{"text":"R$ 9","font":"digital-7","color":"#00ff00","size":200},
-               {"text":"MÍNIMO","font":"Montserrat Bold","color":"#00ff00","size":100}]}]}
+      "lines":[{"text":"R$ 9","font":"digital-7","color":"#00ff12","size":200},
+               {"text":"MÍNIMO","font":"Montserrat Bold","color":"#00ff12","size":100}]}]}
    ```
 3. Confira a trilha de destino: liste os clipes das trilhas de vídeo. V3/V4 costumam ter imagens do usuário (logos,
    produtos); use a primeira trilha **vazia no trecho** acima delas (já foi V3 e V5). Sequência 4K: depois de
@@ -121,7 +121,7 @@ pode ser vermelha) e conclusão que bate (`total`). Todos os tempos em segundos 
 frase que fecha). Medidas na base 1080 (escalam com a largura); deixe vazia a faixa da legenda (y 1080–1200 na base
 1080). Exemplo pronto: `D:\EDIÇÃO\Caio Xavier\29-10\9 VIDEOS\animacoes\8366\quadro.json` (simulação de empréstimo).
 Quando não é conta (passo a passo, lista de prioridades, ranking, causas), use `items:[{n,text,sub,t,y,color,size}]`
-(bolinha numerada + texto, um a um); `info[].color` pinta o valor, `rows[].font:"text"` põe o rótulo da linha em
+(bolinha numerada + texto, um a um); `info[].color` pinta o valor, `items[].tSub` faz o `sub` entrar só quando é dito (com `subSize`, `subColor`), `rows[].font:"text"` põe o rótulo da linha em
 Montserrat, `total.font:"text"` faz a conclusão em palavras (`size`, `color`). `rows`, `header` e `info` são opcionais.
 Sufixo sem letras (`%`) fica na Digital-7; com letras (`MIL`) vai pequeno em Montserrat. Exemplos dos 7 tipos:
 `D:\EDIÇÃO\Caio Xavier\03-11\Takes bruto\animacoes\quadros.json`. Espaçamento que enche a tela: 3 itens em y
@@ -214,3 +214,5 @@ remova o antigo (`clip.remove(false,false)`). Atualize o `spec.json`.
 - O usuário pode recortar com ripple **enquanto** o agente trabalha: os MOGRTs já colocados andam junto, mas o
   `spec.json` e os `.mov` ainda não colocados não. Logo antes de colocar, compare o A1 com o `dump.json` e, se mudou,
   rode o `remap.mjs` no spec (e atualize os tempos do spec com os da timeline).
+- **Contador/roleta em DK Longreach passam por 4 e 5** mesmo com valor final limpo ("12" mostrou um "5" de fonte reserva):
+  nessa fonte use pop/queda/impacto/cascata. Quantidade com 4 ou 5 no MOGRT: `fontEditValue` = `Montserrat-Black`.
